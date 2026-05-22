@@ -9,25 +9,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
 
 *{box-sizing:border-box;}
-
 body{
 margin:0;
 padding:24px 16px 120px;
 background:#f5f5f7;
 font-family:'Pretendard',sans-serif;
-color:#111;
 }
 
 .container{max-width:560px;margin:auto;}
-
-.feed{
-display:flex;
-flex-direction:column;
-gap:22px;
-}
+.feed{display:flex;flex-direction:column;gap:22px;}
 
 .post{
-background:#fff;
+background:white;
 border-radius:30px;
 padding:24px;
 border:1px solid #ececec;
@@ -44,11 +37,8 @@ margin-bottom:16px;
 .left{display:flex;gap:14px;}
 
 .profile{
-width:54px;height:54px;
-border-radius:50%;
-overflow:hidden;
-background:#ddd;
-flex-shrink:0;
+width:54px;height:54px;border-radius:50%;
+overflow:hidden;background:#ddd;
 }
 
 .profile img{width:100%;height:100%;object-fit:cover;}
@@ -57,7 +47,7 @@ flex-shrink:0;
 display:flex;
 align-items:center;
 gap:6px;
-flex-wrap:nowrap;
+flex-wrap:wrap;
 }
 
 .name{font-size:18px;font-weight:700;}
@@ -69,24 +59,14 @@ display:inline-flex;
 align-items:center;
 justify-content:center;
 width:18px;height:18px;
-flex-shrink:0;
 }
 
-.content{
-font-size:18px;
-line-height:1.8;
-word-break:keep-all;
-}
+.content{font-size:18px;line-height:1.8;}
 
-.like{
-border:none;
-background:none;
-font-size:30px;
-cursor:pointer;
-color:#999;
-}
-
+.like{border:none;background:none;font-size:30px;color:#999;cursor:pointer;}
 .like.active{color:#9EC4E8;}
+
+.reply-wrapper{margin-top:28px;}
 
 .reply{
 margin-left:20px;
@@ -102,15 +82,13 @@ left:50%;
 transform:translateX(-50%);
 width:calc(100% - 32px);
 max-width:560px;
+padding:18px;
 border:none;
 border-radius:22px;
 background:#9EC4E8;
-color:#fff;
-font-size:17px;
+color:white;
 font-weight:700;
-padding:18px;
-cursor:pointer;
-box-shadow:0 8px 24px rgba(158,196,232,0.35);
+font-size:17px;
 z-index:999;
 }
 
@@ -119,67 +97,52 @@ position:fixed;
 inset:0;
 background:rgba(0,0,0,0.35);
 display:none;
-justify-content:center;
 align-items:flex-end;
-z-index:1000;
+justify-content:center;
 }
 
 .editor{
+background:white;
 width:100%;
 max-width:600px;
-background:#fff;
 border-radius:30px 30px 0 0;
-padding:26px 20px 40px;
+padding:26px;
 max-height:90vh;
 overflow:auto;
 }
 
-.editor-title{
-font-size:20px;
-font-weight:700;
-margin-bottom:16px;
-}
-
 .input{
 width:100%;
+padding:14px;
 border:none;
 background:#f4f4f5;
-border-radius:18px;
-padding:16px;
-margin-bottom:12px;
-font-size:15px;
+border-radius:14px;
+margin-bottom:10px;
 }
-
-textarea{min-height:110px;resize:none;}
 
 .submit{
 width:100%;
+padding:14px;
 border:none;
+border-radius:14px;
 background:#9EC4E8;
-color:#fff;
-border-radius:18px;
-padding:16px;
+color:white;
 font-weight:700;
-cursor:pointer;
-margin-top:8px;
 }
 
-.add-reply-btn{
-width:100%;
-margin-top:14px;
-border:none;
+.reply-btn{
+margin-top:10px;
 background:#edf5fc;
 color:#5f8fbf;
-border-radius:16px;
-padding:14px;
+border:none;
+padding:12px;
+width:100%;
+border-radius:14px;
 font-weight:700;
-cursor:pointer;
 }
 
-footer{
-text-align:center;
-margin-top:40px;
-color:#9EC4E8;
+.reply-btn.done{
+display:none;
 }
 </style>
 
@@ -191,113 +154,124 @@ color:#9EC4E8;
 <div class="feed" id="feed"></div>
 </div>
 
-<button class="open-editor" onclick="openFan()">+ 게시물 추가</button>
+<button class="open-editor" onclick="openType()">+ 게시물 추가</button>
+
+<!-- TYPE -->
+<div class="overlay" id="typeOverlay">
+<div class="editor">
+<button class="submit" onclick="openFan()">팬 답글</button>
+<br><br>
+<button class="submit" onclick="openArtist()">아티스트 댓글</button>
+</div>
+</div>
 
 <!-- FAN -->
 <div class="overlay" id="fanOverlay">
 <div class="editor">
-
-<div class="editor-title">팬 답글 생성</div>
-
-<input class="input" id="fanName" placeholder="팬 이름"/>
-<input class="input" id="fanProfile" placeholder="프로필 URL"/>
-<input class="input" id="fanTime" placeholder="시간 직접 입력"/>
-<textarea class="input" id="fanContent" placeholder="팬 내용"></textarea>
+<input id="fanName" class="input" placeholder="팬 이름"/>
+<input id="fanProfile" class="input" placeholder="프로필"/>
+<input id="fanTime" class="input" placeholder="시간"/>
+<textarea id="fanContent" class="input" placeholder="내용"></textarea>
 
 <hr>
 
-<div class="editor-title">아티스트 답글</div>
-
-<input class="input" id="fanArtistName"/>
-<input class="input" id="fanArtistColor"/>
-<input class="input" id="fanArtistProfile"/>
-<input class="input" id="fanArtistTime"/>
-<textarea class="input" id="fanArtistReply"></textarea>
+<input id="fanArtistName" class="input" placeholder="아티스트 이름"/>
+<input id="fanArtistColor" class="input" placeholder="색상 #HEX"/>
+<input id="fanArtistProfile" class="input" placeholder="프로필"/>
+<input id="fanArtistTime" class="input" placeholder="시간"/>
+<textarea id="fanArtistReply" class="input" placeholder="답글"></textarea>
 
 <button class="submit" onclick="addFan()">저장</button>
-
 </div>
 </div>
 
 <!-- ARTIST -->
 <div class="overlay" id="artistOverlay">
 <div class="editor">
-
-<div class="editor-title">아티스트 댓글</div>
-
-<input class="input" id="artistName"/>
-<input class="input" id="artistColor"/>
-<input class="input" id="artistProfile"/>
-<input class="input" id="artistTime"/>
-<textarea class="input" id="artistContent"></textarea>
+<input id="artistName" class="input" placeholder="아티스트 이름"/>
+<input id="artistColor" class="input" placeholder="색상"/>
+<input id="artistProfile" class="input" placeholder="프로필"/>
+<input id="artistTime" class="input" placeholder="시간"/>
+<textarea id="artistContent" class="input" placeholder="내용"></textarea>
 
 <button class="submit" onclick="addArtist()">저장</button>
-
 </div>
 </div>
 
-<!-- Firebase compat -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- REPLY -->
+<div class="overlay" id="replyOverlay">
+<div class="editor">
+<input id="rName" class="input" placeholder="이름"/>
+<input id="rColor" class="input" placeholder="색상"/>
+<input id="rProfile" class="input" placeholder="프로필"/>
+<input id="rTime" class="input" placeholder="시간"/>
+<textarea id="rText" class="input" placeholder="답글"></textarea>
 
-<script>
+<button class="submit" onclick="addReply()">저장</button>
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+getFirestore,
+collection,
+doc,
+getDoc,
+setDoc,
+onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
-  authDomain: "weverse-archive.firebaseapp.com",
-  projectId: "weverse-archive",
-  storageBucket: "weverse-archive.firebasestorage.app",
-  messagingSenderId: "81825623806",
-  appId: "1:81825623806:web:4a815e85600f0f9de13faf"
+apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
+authDomain: "weverse-archive.firebaseapp.com",
+projectId: "weverse-archive",
+storageBucket: "weverse-archive.appspot.com",
+messagingSenderId: "81825623806",
+appId: "1:81825623806:web:4a815e85600f0f9de13faf"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-/* archive 분리 */
-const params = new URLSearchParams(location.search);
-const archiveId = params.get("archive") || "default";
-
-const ref = db.collection("archives").doc(archiveId);
+const archiveId = new URLSearchParams(location.search).get("archive") || "default";
+const ref = doc(db, "archives", archiveId);
 
 let posts = [];
+let replyIndex = null;
+
 const feed = document.getElementById("feed");
 
-/* LOAD */
-async function load(){
-const doc = await ref.get();
-if(doc.exists){
-posts = doc.data().posts || [];
-}
+/* realtime load */
+onSnapshot(ref, (snap)=>{
+posts = snap.exists() ? snap.data().posts || [] : [];
 render();
-}
+});
 
-/* SAVE */
+/* save */
 async function save(){
-await ref.set({posts});
-render();
+await setDoc(ref, {posts});
 }
 
-/* 인증마크 */
+/* verify icon */
 function verify(){
-return `
-<span class="verify">
+return `<span class="verify">
 <svg viewBox="0 0 24 24">
 <path fill="#22D3C5" d="M12 2L14.7 4.1L18 3.8L19.1 7L22 9L20.8 12L22 15L19.1 17L18 20.2L14.7 19.9L12 22L9.3 19.9L6 20.2L4.9 17L2 15L3.2 12L2 9L4.9 7L6 3.8L9.3 4.1L12 2Z"/>
-<path fill="#fff" d="M10.2 15.5L6.8 12.1L8 10.9L10.2 13.1L16 7.3L17.2 8.5L10.2 15.5Z"/>
-</svg>
-</span>`;
+</svg></span>`;
 }
 
-/* RENDER */
+/* render */
 function render(){
-feed.innerHTML="";
+feed.innerHTML = "";
 
 posts.forEach((p,i)=>{
-let html="";
+
+let html = "";
 
 if(p.type==="fan"){
-html+=`
+html += `
 <div class="post">
 <div class="header">
 <div class="left">
@@ -311,38 +285,25 @@ html+=`
 
 <div class="content">${p.fanContent}</div>
 
-<div class="reply">
-<div>아티스트 답글</div>
-`;
-
-p.replies.forEach(r=>{
-html+=`
-<div class="reply">
-<div class="name-row">
-<div class="name" style="color:${r.artistColor}">
-${r.artistName}
+<div class="reply-wrapper">
+<div style="font-weight:700">아티스트 답글</div>
+${p.replies.map(renderReply).join("")}
+<button class="reply-btn ${p.done?'done':''}" onclick="openReply(${i})">
++ 아티스트 답글 추가
+</button>
 </div>
-${verify()}
-</div>
-<div class="date">${r.artistTime}</div>
-<div class="content">${r.artistReply}</div>
 </div>`;
-});
-
-html+=`</div></div>`;
 }
 
 if(p.type==="artist"){
-html+=`
+html += `
 <div class="post">
 <div class="header">
 <div class="left">
 <div class="profile"><img src="${p.artistProfile}"></div>
 <div>
 <div class="name-row">
-<div class="name" style="color:${p.artistColor}">
-${p.artistName}
-</div>
+<div class="name" style="color:${p.artistColor}">${p.artistName}</div>
 ${verify()}
 </div>
 <div class="date">${p.artistTime}</div>
@@ -354,11 +315,33 @@ ${verify()}
 </div>`;
 }
 
-feed.innerHTML+=html;
+feed.innerHTML += html;
 });
 }
 
-/* ADD */
+/* reply */
+function renderReply(r){
+return `
+<div class="reply">
+<div class="name-row">
+<div class="name" style="color:${r.artistColor}">${r.artistName}</div>
+${verify()}
+</div>
+<div class="date">${r.artistTime}</div>
+<div>${r.artistReply}</div>
+</div>`;
+}
+
+/* overlays */
+function openType(){document.getElementById("typeOverlay").style.display="flex";}
+function openFan(){document.getElementById("fanOverlay").style.display="flex";}
+function openArtist(){document.getElementById("artistOverlay").style.display="flex";}
+
+window.openType=openType;
+window.openFan=openFan;
+window.openArtist=openArtist;
+
+/* add */
 async function addFan(){
 posts.push({
 type:"fan",
@@ -368,13 +351,13 @@ fanTime:fanTime.value,
 fanContent:fanContent.value,
 replies:[{
 artistName:fanArtistName.value,
-artistColor:fanArtistColor.value||"#9EC4E8",
+artistColor:fanArtistColor.value,
 artistProfile:fanArtistProfile.value,
 artistTime:fanArtistTime.value,
 artistReply:fanArtistReply.value
-}]
+}],
+done:false
 });
-
 await save();
 }
 
@@ -382,23 +365,37 @@ async function addArtist(){
 posts.push({
 type:"artist",
 artistName:artistName.value,
-artistColor:artistColor.value||"#9EC4E8",
+artistColor:artistColor.value,
 artistProfile:artistProfile.value,
 artistTime:artistTime.value,
 artistContent:artistContent.value,
 replies:[]
 });
-
 await save();
 }
 
-/* OPEN */
-function openFan(){
-document.getElementById("fanOverlay").style.display="flex";
+function openReply(i){
+replyIndex=i;
+document.getElementById("replyOverlay").style.display="flex";
 }
 
-/* START */
-load();
+async function addReply(){
+posts[replyIndex].replies.push({
+artistName:rName.value,
+artistColor:rColor.value,
+artistProfile:rProfile.value,
+artistTime:rTime.value,
+artistReply:rText.value
+});
+await save();
+}
+
+window.addFan=addFan;
+window.addArtist=addArtist;
+window.addReply=addReply;
+window.openReply=openReply;
+
+render();
 
 </script>
 
