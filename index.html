@@ -52,13 +52,29 @@ overflow:hidden;background:#ddd;flex-shrink:0;
 
 .profile img{ width:100%;height:100%;object-fit:cover; }
 
-.name-row{ display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+.name-wrap{
+display:flex;
+align-items:center;
+gap:6px;
+}
 
-.name{ font-size:18px;font-weight:700; }
+.name{
+font-size:18px;
+font-weight:700;
+}
 
-.date{ margin-top:4px;font-size:14px;color:#8e8e93; }
+.date{
+margin-top:4px;
+font-size:14px;
+color:#8e8e93;
+}
 
-.verify{ width:18px;height:18px;display:flex;align-items:center;justify-content:center; }
+.verify{
+width:18px;height:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
 
 .content{
 font-size:18px;
@@ -69,7 +85,11 @@ word-break:keep-all;
 .actions{ margin-top:18px; }
 
 .like{
-border:none;background:none;font-size:30px;cursor:pointer;color:#999;
+border:none;
+background:none;
+font-size:30px;
+cursor:pointer;
+color:#999;
 }
 
 .like.active{ color:#9EC4E8; }
@@ -77,7 +97,9 @@ border:none;background:none;font-size:30px;cursor:pointer;color:#999;
 .reply-wrapper{ margin-top:28px; }
 
 .reply-label{
-font-size:17px;font-weight:700;margin-bottom:18px;
+font-size:17px;
+font-weight:700;
+margin-bottom:18px;
 }
 
 .reply{
@@ -89,11 +111,17 @@ margin-bottom:26px;
 
 .open-editor{
 position:fixed;
-bottom:24px;left:50%;transform:translateX(-50%);
-width:calc(100% - 32px);max-width:560px;
-border:none;border-radius:22px;
-background:#9EC4E8;color:white;
-font-size:17px;font-weight:700;
+bottom:24px;
+left:50%;
+transform:translateX(-50%);
+width:calc(100% - 32px);
+max-width:560px;
+border:none;
+border-radius:22px;
+background:#9EC4E8;
+color:white;
+font-size:17px;
+font-weight:700;
 padding:18px;
 cursor:pointer;
 box-shadow:0 8px 24px rgba(158,196,232,0.35);
@@ -101,7 +129,8 @@ z-index:999;
 }
 
 .overlay{
-position:fixed;inset:0;
+position:fixed;
+inset:0;
 background:rgba(0,0,0,0.35);
 display:none;
 justify-content:center;
@@ -110,7 +139,8 @@ z-index:1000;
 }
 
 .editor{
-width:100%;max-width:600px;
+width:100%;
+max-width:600px;
 background:white;
 border-radius:30px 30px 0 0;
 padding:26px 20px 40px;
@@ -119,7 +149,9 @@ overflow:auto;
 }
 
 .editor-title{
-font-size:25px;font-weight:700;margin-bottom:20px;
+font-size:25px;
+font-weight:700;
+margin-bottom:20px;
 }
 
 .input{
@@ -158,8 +190,8 @@ font-size:15px;
 font-weight:700;
 cursor:pointer;
 }
-
 </style>
+
 </head>
 
 <body>
@@ -188,7 +220,7 @@ cursor:pointer;
 
 <input class="input" id="fanName" placeholder="팬 이름"/>
 <input class="input" id="fanProfile" placeholder="프로필 URL"/>
-<input class="input" id="fanTime" placeholder="작성 시간 직접 입력"/>
+<input class="input" id="fanTime" placeholder="시간 (직접 입력)"/>
 <textarea class="input" id="fanContent" placeholder="내용"></textarea>
 
 <hr>
@@ -196,9 +228,9 @@ cursor:pointer;
 <div style="font-weight:700;margin:10px 0;">아티스트 답글</div>
 
 <input class="input" id="fanArtistName" placeholder="아티스트 이름"/>
-<input class="input" id="fanArtistColor" placeholder="색상 코드 (#000000)"/>
-<input class="input" id="fanArtistProfile" placeholder="프로필 URL"/>
-<input class="input" id="fanArtistTime" placeholder="작성 시간 직접 입력"/>
+<input class="input" id="fanArtistColor" placeholder="색상 코드 (#000)"/>
+<input class="input" id="fanArtistProfile" placeholder="프로필"/>
+<input class="input" id="fanArtistTime" placeholder="시간"/>
 <textarea class="input" id="fanArtistReply" placeholder="답글"></textarea>
 
 <button class="submit" onclick="addFanPost()">저장</button>
@@ -212,10 +244,10 @@ cursor:pointer;
 
 <div class="editor-title">아티스트 댓글</div>
 
-<input class="input" id="artistName" placeholder="아티스트 이름"/>
+<input class="input" id="artistName" placeholder="이름"/>
 <input class="input" id="artistColor" placeholder="색상 코드"/>
 <input class="input" id="artistProfile" placeholder="프로필"/>
-<input class="input" id="artistTime" placeholder="시간 직접 입력"/>
+<input class="input" id="artistTime" placeholder="시간"/>
 <textarea class="input" id="artistContent" placeholder="내용"></textarea>
 
 <button class="submit" onclick="addArtistComment()">저장</button>
@@ -227,15 +259,15 @@ cursor:pointer;
 <div class="overlay" id="replyOverlay">
 <div class="editor">
 
-<div class="editor-title">답글 추가</div>
+<div class="editor-title">아티스트 답글 추가</div>
 
 <input class="input" id="replyArtistName" placeholder="이름"/>
 <input class="input" id="replyArtistColor" placeholder="색상 코드"/>
 <input class="input" id="replyArtistProfile" placeholder="프로필"/>
-<input class="input" id="replyArtistTime" placeholder="시간 직접 입력"/>
+<input class="input" id="replyArtistTime" placeholder="시간"/>
 <textarea class="input" id="replyArtistContent" placeholder="답글"></textarea>
 
-<button class="submit" onclick="submitReply()">저장</button>
+<button class="submit" onclick="submitReply()">답글 저장</button>
 
 </div>
 </div>
@@ -249,9 +281,9 @@ const STORAGE_KEY = 'weverseArchive_' + archiveId;
 let posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let currentReplyIndex = null;
 
-const feed = document.getElementById('feed');
+const feed = document.getElementById("feed");
 
-/* 인증 마크 */
+/* 인증마크 */
 function verifyBadge(){
 return `
 <div class="verify">
@@ -264,15 +296,15 @@ return `
 
 /* 렌더 */
 function renderPosts(){
-feed.innerHTML = "";
+feed.innerHTML="";
 
-posts.forEach((post,index)=>{
+posts.forEach((post,i)=>{
 
 let html = `<div class="post">`;
 
-if(post.type === "fan"){
+if(post.type==="fan"){
 
-html += `
+html+=`
 <div class="header">
 <div class="left">
 <div class="profile"><img src="${post.fanProfile}"></div>
@@ -284,30 +316,34 @@ html += `
 </div>
 
 <div class="content">${post.fanContent}</div>
-
 <div class="actions"><button class="like">♡</button></div>
 
 <div class="reply-wrapper">
 <div class="reply-label">아티스트 답글</div>
 `;
 
-post.replies.forEach(r=>{
-html += renderReply(r);
-});
+post.replies.forEach(r=> html+=renderReply(r));
 
-html += `
-<button class="add-reply-btn" onclick="addReplyPrompt(${index})">+ 답글 추가</button>
+html+=`
+<button class="add-reply-btn" onclick="addReplyPrompt(${i})">아티스트 답글 추가</button>
 </div>`;
 }
 
-if(post.type === "artist"){
+if(post.type==="artist"){
 
-html += `
+html+=`
 <div class="header">
 <div class="left">
 <div class="profile"><img src="${post.artistProfile}"></div>
+
 <div>
-<div class="name" style="color:${post.artistColor}">${post.artistName} ${verifyBadge()}</div>
+<div class="name-wrap">
+<div class="name" style="color:${post.artistColor}">
+${post.artistName}
+</div>
+${verifyBadge()}
+</div>
+
 <div class="date">${post.artistTime}</div>
 </div>
 </div>
@@ -320,23 +356,21 @@ html += `
 <div class="reply-label">아티스트 답글</div>
 `;
 
-post.replies.forEach(r=>{
-html += renderReply(r);
-});
+post.replies.forEach(r=> html+=renderReply(r));
 
-html += `
-<button class="add-reply-btn" onclick="addReplyPrompt(${index})">+ 답글 추가</button>
+html+=`
+<button class="add-reply-btn" onclick="addReplyPrompt(${i})">아티스트 답글 추가</button>
 </div>`;
 }
 
-html += `</div>`;
-feed.innerHTML += html;
+html+="</div>";
+feed.innerHTML+=html;
 });
 
 document.querySelectorAll(".like").forEach(btn=>{
-btn.onclick = () => {
+btn.onclick=()=>{
 btn.classList.toggle("active");
-btn.textContent = btn.classList.contains("active") ? "♥" : "♡";
+btn.textContent = btn.classList.contains("active")?"♥":"♡";
 };
 });
 }
@@ -359,15 +393,14 @@ ${r.artistName} ${verifyBadge()}
 
 <div class="content">${r.artistReply}</div>
 <div class="actions"><button class="like">♡</button></div>
-</div>
-`;
+</div>`;
 }
 
 /* open */
-function openTypeSelector(){ closeAll(); document.getElementById("typeOverlay").style.display="flex"; }
-function openFanPostEditor(){ closeAll(); document.getElementById("fanOverlay").style.display="flex"; }
-function openArtistCommentEditor(){ closeAll(); document.getElementById("artistOverlay").style.display="flex"; }
-function addReplyPrompt(i){ currentReplyIndex=i; closeAll(); document.getElementById("replyOverlay").style.display="flex"; }
+function openTypeSelector(){closeAll();typeOverlay.style.display="flex";}
+function openFanPostEditor(){closeAll();fanOverlay.style.display="flex";}
+function openArtistCommentEditor(){closeAll();artistOverlay.style.display="flex";}
+function addReplyPrompt(i){currentReplyIndex=i;closeAll();replyOverlay.style.display="flex";}
 
 /* close */
 function closeAll(){
@@ -391,7 +424,7 @@ fanTime:fanTime.value,
 fanContent:fanContent.value,
 replies:[{
 artistName:fanArtistName.value,
-artistColor:fanArtistColor.value || "#9EC4E8",
+artistColor:fanArtistColor.value||"#9EC4E8",
 artistProfile:fanArtistProfile.value,
 artistTime:fanArtistTime.value,
 artistReply:fanArtistReply.value
@@ -404,7 +437,7 @@ function addArtistComment(){
 posts.push({
 type:"artist",
 artistName:artistName.value,
-artistColor:artistColor.value || "#9EC4E8",
+artistColor:artistColor.value||"#9EC4E8",
 artistProfile:artistProfile.value,
 artistTime:artistTime.value,
 artistContent:artistContent.value,
@@ -416,7 +449,7 @@ save();
 function submitReply(){
 posts[currentReplyIndex].replies.push({
 artistName:replyArtistName.value,
-artistColor:replyArtistColor.value || "#9EC4E8",
+artistColor:replyArtistColor.value||"#9EC4E8",
 artistProfile:replyArtistProfile.value,
 artistTime:replyArtistTime.value,
 artistReply:replyArtistContent.value
