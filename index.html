@@ -22,11 +22,7 @@ color:#111;
 
 .container{ max-width:560px; margin:auto; }
 
-.feed{
-display:flex;
-flex-direction:column;
-gap:22px;
-}
+.feed{ display:flex; flex-direction:column; gap:22px; }
 
 .post{
 background:white;
@@ -46,41 +42,37 @@ margin-bottom:16px;
 .left{ display:flex; gap:14px; }
 
 .profile{
-width:54px;height:54px;border-radius:50%;
-overflow:hidden;background:#ddd;flex-shrink:0;
+width:54px;
+height:54px;
+border-radius:50%;
+overflow:hidden;
+background:#ddd;
+flex-shrink:0;
 }
 
-.profile img{ width:100%;height:100%;object-fit:cover; }
+.profile img{ width:100%; height:100%; object-fit:cover; }
 
-.name-wrap{
+.name-row{
 display:flex;
 align-items:center;
 gap:6px;
+flex-wrap:wrap;
 }
 
-.name{
-font-size:18px;
-font-weight:700;
-}
+.name{ font-size:18px; font-weight:700; }
 
-.date{
-margin-top:4px;
-font-size:14px;
-color:#8e8e93;
-}
+.date{ margin-top:4px; font-size:14px; color:#8e8e93; }
 
 .verify{
-width:18px;height:18px;
-display:flex;
+display:inline-flex;
 align-items:center;
 justify-content:center;
+width:18px;
+height:18px;
+vertical-align:middle;
 }
 
-.content{
-font-size:18px;
-line-height:1.8;
-word-break:keep-all;
-}
+.content{ font-size:18px; line-height:1.8; word-break:keep-all; }
 
 .actions{ margin-top:18px; }
 
@@ -162,6 +154,7 @@ border-radius:18px;
 padding:16px;
 margin-bottom:14px;
 font-size:16px;
+font-family:'Pretendard',sans-serif;
 }
 
 textarea{ resize:none; min-height:110px; }
@@ -190,6 +183,13 @@ font-size:15px;
 font-weight:700;
 cursor:pointer;
 }
+
+footer{
+text-align:center;
+margin-top:40px;
+color:#9EC4E8;
+font-size:15px;
+}
 </style>
 
 </head>
@@ -200,14 +200,15 @@ cursor:pointer;
 <div class="feed" id="feed"></div>
 </div>
 
-<button class="open-editor" onclick="openTypeSelector()">+ 게시물 추가</button>
+<button class="open-editor" onclick="openTypeSelector()">
++ 게시물 추가
+</button>
 
 <!-- TYPE -->
 <div class="overlay" id="typeOverlay">
 <div class="editor">
 <div class="editor-title">무엇을 추가할까?</div>
-<button class="submit" onclick="openFanPostEditor()">팬 답글</button>
-<br><br>
+<button class="submit" onclick="openFanPostEditor()" style="margin-bottom:12px;">팬 답글</button>
 <button class="submit" onclick="openArtistCommentEditor()">아티스트 댓글</button>
 </div>
 </div>
@@ -215,26 +216,24 @@ cursor:pointer;
 <!-- FAN -->
 <div class="overlay" id="fanOverlay">
 <div class="editor">
-
 <div class="editor-title">팬 답글 생성</div>
 
 <input class="input" id="fanName" placeholder="팬 이름"/>
-<input class="input" id="fanProfile" placeholder="프로필 URL"/>
-<input class="input" id="fanTime" placeholder="시간 (직접 입력)"/>
-<textarea class="input" id="fanContent" placeholder="내용"></textarea>
+<input class="input" id="fanProfile" placeholder="팬 프로필"/>
+<input class="input" id="fanTime" placeholder="작성 시간"/>
+<textarea class="input" id="fanContent"></textarea>
 
 <hr>
 
-<div style="font-weight:700;margin:10px 0;">아티스트 답글</div>
+<div style="font-weight:700;margin-bottom:14px;">아티스트 답글</div>
 
-<input class="input" id="fanArtistName" placeholder="아티스트 이름"/>
-<input class="input" id="fanArtistColor" placeholder="색상 코드 (#000)"/>
-<input class="input" id="fanArtistProfile" placeholder="프로필"/>
-<input class="input" id="fanArtistTime" placeholder="시간"/>
-<textarea class="input" id="fanArtistReply" placeholder="답글"></textarea>
+<input class="input" id="fanArtistName"/>
+<input class="input" id="fanArtistColor"/>
+<input class="input" id="fanArtistProfile"/>
+<input class="input" id="fanArtistTime"/>
+<textarea class="input" id="fanArtistReply"></textarea>
 
-<button class="submit" onclick="addFanPost()">저장</button>
-
+<button class="submit" onclick="addFanPost()">저장하기</button>
 </div>
 </div>
 
@@ -242,15 +241,15 @@ cursor:pointer;
 <div class="overlay" id="artistOverlay">
 <div class="editor">
 
-<div class="editor-title">아티스트 댓글</div>
+<div class="editor-title">아티스트 댓글 생성</div>
 
-<input class="input" id="artistName" placeholder="이름"/>
-<input class="input" id="artistColor" placeholder="색상 코드"/>
-<input class="input" id="artistProfile" placeholder="프로필"/>
-<input class="input" id="artistTime" placeholder="시간"/>
-<textarea class="input" id="artistContent" placeholder="내용"></textarea>
+<input class="input" id="artistName"/>
+<input class="input" id="artistColor"/>
+<input class="input" id="artistProfile"/>
+<input class="input" id="artistTime"/>
+<textarea class="input" id="artistContent"></textarea>
 
-<button class="submit" onclick="addArtistComment()">저장</button>
+<button class="submit" onclick="addArtistComment()">저장하기</button>
 
 </div>
 </div>
@@ -261,16 +260,19 @@ cursor:pointer;
 
 <div class="editor-title">아티스트 답글 추가</div>
 
-<input class="input" id="replyArtistName" placeholder="이름"/>
-<input class="input" id="replyArtistColor" placeholder="색상 코드"/>
-<input class="input" id="replyArtistProfile" placeholder="프로필"/>
-<input class="input" id="replyArtistTime" placeholder="시간"/>
-<textarea class="input" id="replyArtistContent" placeholder="답글"></textarea>
+<input class="input" id="replyArtistName"/>
+<input class="input" id="replyArtistColor"/>
+<input class="input" id="replyArtistProfile"/>
+<input class="input" id="replyArtistTime"/>
+<textarea class="input" id="replyArtistContent"></textarea>
 
-<button class="submit" onclick="submitReply()">답글 저장</button>
+<button class="submit" onclick="submitReply()">추가하기</button>
+<button class="submit" onclick="finishReplyMode()" style="background:#777;margin-top:10px;">완료</button>
 
 </div>
 </div>
+
+<footer>made with love ♡</footer>
 
 <script>
 
@@ -280,10 +282,11 @@ const STORAGE_KEY = 'weverseArchive_' + archiveId;
 
 let posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let currentReplyIndex = null;
+let replyEditMode = false;
 
-const feed = document.getElementById("feed");
+const feed = document.getElementById('feed');
 
-/* 인증마크 */
+/* VERIFY */
 function verifyBadge(){
 return `
 <div class="verify">
@@ -294,16 +297,17 @@ return `
 </div>`;
 }
 
-/* 렌더 */
+/* RENDER */
 function renderPosts(){
-feed.innerHTML="";
+feed.innerHTML = '';
 
-posts.forEach((post,i)=>{
+posts.forEach((post,index)=>{
+const card = document.createElement('div');
+card.className='post';
 
-let html = `<div class="post">`;
+let html='';
 
-if(post.type==="fan"){
-
+if(post.type==='fan'){
 html+=`
 <div class="header">
 <div class="left">
@@ -322,28 +326,28 @@ html+=`
 <div class="reply-label">아티스트 답글</div>
 `;
 
-post.replies.forEach(r=> html+=renderReply(r));
+post.replies.forEach(r=>html+=renderReply(r));
 
 html+=`
-<button class="add-reply-btn" onclick="addReplyPrompt(${i})">아티스트 답글 추가</button>
+${replyEditMode ?
+`<button class="add-reply-btn" onclick="addReplyPrompt(${index})">+ 추가</button>
+<button class="add-reply-btn" onclick="finishReplyMode()">완료</button>`
+:
+`<button class="add-reply-btn" onclick="startReplyMode(${index})">아티스트 답글 추가</button>`
+}
 </div>`;
 }
 
-if(post.type==="artist"){
-
+if(post.type==='artist'){
 html+=`
 <div class="header">
 <div class="left">
 <div class="profile"><img src="${post.artistProfile}"></div>
-
 <div>
-<div class="name-wrap">
-<div class="name" style="color:${post.artistColor}">
-${post.artistName}
-</div>
+<div class="name-row">
+<div class="name" style="color:${post.artistColor}">${post.artistName}</div>
 ${verifyBadge()}
 </div>
-
 <div class="date">${post.artistTime}</div>
 </div>
 </div>
@@ -353,29 +357,30 @@ ${verifyBadge()}
 <div class="actions"><button class="like">♡</button></div>
 
 <div class="reply-wrapper">
-<div class="reply-label">아티스트 답글</div>
+${post.replies.length?'<div class="reply-label">아티스트 답글</div>':''}
 `;
 
-post.replies.forEach(r=> html+=renderReply(r));
+post.replies.forEach(r=>html+=renderReply(r));
 
 html+=`
-<button class="add-reply-btn" onclick="addReplyPrompt(${i})">아티스트 답글 추가</button>
+${replyEditMode ?
+`<button class="add-reply-btn" onclick="addReplyPrompt(${index})">+ 추가</button>
+<button class="add-reply-btn" onclick="finishReplyMode()">완료</button>`
+:
+`<button class="add-reply-btn" onclick="startReplyMode(${index})">아티스트 답글 추가</button>`
+}
 </div>`;
 }
 
-html+="</div>";
-feed.innerHTML+=html;
+card.innerHTML=html;
+feed.appendChild(card);
 });
 
-document.querySelectorAll(".like").forEach(btn=>{
-btn.onclick=()=>{
-btn.classList.toggle("active");
-btn.textContent = btn.classList.contains("active")?"♥":"♡";
-};
+document.querySelectorAll('.like').forEach(b=>{
+b.onclick=()=>b.classList.toggle('active');
 });
 }
 
-/* reply */
 function renderReply(r){
 return `
 <div class="reply">
@@ -383,78 +388,82 @@ return `
 <div class="left">
 <div class="profile"><img src="${r.artistProfile}"></div>
 <div>
-<div class="name" style="color:${r.artistColor}">
-${r.artistName} ${verifyBadge()}
+<div class="name-row">
+<div class="name" style="color:${r.artistColor}">${r.artistName}</div>
+${verifyBadge()}
 </div>
 <div class="date">${r.artistTime}</div>
 </div>
 </div>
 </div>
-
 <div class="content">${r.artistReply}</div>
-<div class="actions"><button class="like">♡</button></div>
 </div>`;
 }
 
-/* open */
-function openTypeSelector(){closeAll();typeOverlay.style.display="flex";}
-function openFanPostEditor(){closeAll();fanOverlay.style.display="flex";}
-function openArtistCommentEditor(){closeAll();artistOverlay.style.display="flex";}
-function addReplyPrompt(i){currentReplyIndex=i;closeAll();replyOverlay.style.display="flex";}
-
-/* close */
-function closeAll(){
-document.querySelectorAll(".overlay").forEach(o=>o.style.display="none");
+/* MODE */
+function startReplyMode(i){
+replyEditMode=true;
+addReplyPrompt(i);
 }
 
-/* save */
+function finishReplyMode(){
+replyEditMode=false;
+closeAll();
+renderPosts();
+}
+
+/* OPEN */
+function openTypeSelector(){closeAll();document.getElementById('typeOverlay').style.display='flex';}
+function openFanPostEditor(){closeAll();document.getElementById('fanOverlay').style.display='flex';}
+function openArtistCommentEditor(){closeAll();document.getElementById('artistOverlay').style.display='flex';}
+function addReplyPrompt(i){currentReplyIndex=i;closeAll();document.getElementById('replyOverlay').style.display='flex';}
+
+/* CLOSE */
+function closeAll(){document.querySelectorAll('.overlay').forEach(o=>o.style.display='none');}
+
+/* SAVE */
 function save(){
 localStorage.setItem(STORAGE_KEY,JSON.stringify(posts));
 renderPosts();
 closeAll();
 }
 
-/* add */
-function addFanPost(){
-posts.push({
-type:"fan",
+/* ADD */
+function addFanPost(){posts.push({
+type:'fan',
 fanName:fanName.value,
 fanProfile:fanProfile.value,
 fanTime:fanTime.value,
 fanContent:fanContent.value,
 replies:[{
 artistName:fanArtistName.value,
-artistColor:fanArtistColor.value||"#9EC4E8",
+artistColor:fanArtistColor.value||'#9EC4E8',
 artistProfile:fanArtistProfile.value,
 artistTime:fanArtistTime.value,
 artistReply:fanArtistReply.value
 }]
-});
-save();
-}
+});save();}
 
-function addArtistComment(){
-posts.push({
-type:"artist",
+function addArtistComment(){posts.push({
+type:'artist',
 artistName:artistName.value,
-artistColor:artistColor.value||"#9EC4E8",
+artistColor:artistColor.value||'#9EC4E8',
 artistProfile:artistProfile.value,
 artistTime:artistTime.value,
 artistContent:artistContent.value,
 replies:[]
-});
-save();
-}
+});save();}
 
 function submitReply(){
 posts[currentReplyIndex].replies.push({
 artistName:replyArtistName.value,
-artistColor:replyArtistColor.value||"#9EC4E8",
+artistColor:replyArtistColor.value||'#9EC4E8',
 artistProfile:replyArtistProfile.value,
 artistTime:replyArtistTime.value,
 artistReply:replyArtistContent.value
 });
 save();
+addReplyPrompt(currentReplyIndex);
 }
 
 renderPosts();
