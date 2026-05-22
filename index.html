@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Weverse Archive</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
 
-/* ================= BASE ================= */
 *{box-sizing:border-box;}
 
 body{
@@ -22,32 +21,39 @@ color:#111;
 .container{max-width:560px;margin:auto;}
 .feed{display:flex;flex-direction:column;gap:22px;}
 
-/* ================= POST ================= */
 .post{
-background:#fff;
+background:white;
 border-radius:30px;
 padding:24px;
 border:1px solid #ececec;
 box-shadow:0 4px 20px rgba(0,0,0,0.05);
 }
 
-.header{display:flex;justify-content:space-between;margin-bottom:16px;}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
 .left{display:flex;gap:14px;}
 
 .profile{
 width:54px;height:54px;border-radius:50%;
-overflow:hidden;background:#ddd;
+overflow:hidden;background:#ddd;flex-shrink:0;
 }
+
 .profile img{width:100%;height:100%;object-fit:cover;}
 
 .name{font-size:18px;font-weight:700;}
 .date{font-size:14px;color:#8e8e93;margin-top:4px;}
+
+.verify{
+display:flex;align-items:center;justify-content:center;
+width:18px;height:18px;
+}
 
 .content{
 font-size:18px;
 line-height:1.8;
 word-break:keep-all;
 }
+
+.actions{margin-top:18px;}
 
 .like{
 border:none;
@@ -56,9 +62,24 @@ font-size:30px;
 cursor:pointer;
 color:#999;
 }
+
 .like.active{color:#9EC4E8;}
 
-/* ================= BUTTON ================= */
+.reply-wrapper{margin-top:28px;}
+
+.reply-label{
+font-size:17px;
+font-weight:700;
+margin-bottom:18px;
+}
+
+.reply{
+margin-left:20px;
+padding-left:18px;
+border-left:3px solid #e5e5e5;
+margin-bottom:26px;
+}
+
 .open-editor{
 position:fixed;
 bottom:24px;
@@ -73,10 +94,11 @@ color:white;
 font-size:17px;
 font-weight:700;
 padding:18px;
+cursor:pointer;
+box-shadow:0 8px 24px rgba(158,196,232,0.35);
 z-index:999;
 }
 
-/* ================= OVERLAY ================= */
 .overlay{
 position:fixed;
 inset:0;
@@ -90,7 +112,7 @@ z-index:1000;
 .editor{
 width:100%;
 max-width:600px;
-background:#fff;
+background:white;
 border-radius:30px 30px 0 0;
 padding:26px 20px 40px;
 max-height:90vh;
@@ -111,135 +133,14 @@ font-size:16px;
 width:100%;
 border:none;
 background:#9EC4E8;
-color:#fff;
+color:white;
 border-radius:18px;
 padding:16px;
 font-size:17px;
 font-weight:700;
+cursor:pointer;
 }
 </style>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-
-/* ================= FIREBASE ================= */
-const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "weverse-archive.firebaseapp.com",
-projectId: "weverse-archive",
-storageBucket: "weverse-archive.appspot.com",
-messagingSenderId: "YOUR_ID",
-appId: "YOUR_APP_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/* ================= ARCHIVE SYSTEM ================= */
-const archiveId =
-new URLSearchParams(location.search).get("archive") || "default";
-
-const DB_NAME = "weverseArchive";
-const LOCAL_KEY = "weverse_" + archiveId;
-
-/* ================= STATE ================= */
-let posts = [];
-const feed = document.getElementById("feed");
-
-/* ================= SAFE RENDER ================= */
-function render(){
-if(!feed) return;
-
-feed.innerHTML = "";
-
-posts.forEach((p,i)=>{
-const div = document.createElement("div");
-div.className="post";
-
-div.innerHTML = `
-<div class="header">
-<div class="left">
-<div class="profile">
-<img src="${p.profile || ''}">
-</div>
-<div>
-<div class="name">${p.name || ''}</div>
-<div class="date">${p.time || ''}</div>
-</div>
-</div>
-</div>
-
-<div class="content">${p.content || ''}</div>
-
-<div class="actions">
-<button class="like">♡</button>
-</div>
-`;
-
-feed.appendChild(div);
-});
-}
-
-/* ================= SAVE (LOCAL + FIREBASE) ================= */
-async function save(){
-try{
-localStorage.setItem(LOCAL_KEY, JSON.stringify(posts));
-
-await setDoc(doc(db, DB_NAME, archiveId), {
-posts,
-updatedAt: Date.now()
-});
-}catch(e){
-console.error("SAVE ERROR:", e);
-}
-
-render();
-}
-
-/* ================= LOAD (LOCAL → FIREBASE MERGE) ================= */
-async function load(){
-try{
-
-const local = localStorage.getItem(LOCAL_KEY);
-if(local) posts = JSON.parse(local);
-
-const snap = await getDoc(doc(db, DB_NAME, archiveId));
-
-if(snap.exists()){
-const remote = snap.data().posts || [];
-
-/* merge (중복 방지용 단순 override 구조) */
-if(remote.length > posts.length){
-posts = remote;
-localStorage.setItem(LOCAL_KEY, JSON.stringify(posts));
-}
-}
-
-}catch(e){
-console.error("LOAD ERROR:", e);
-}
-
-render();
-}
-
-/* ================= ADD POST ================= */
-window.addPost = function(){
-
-posts.push({
-name:"Weverse User",
-content:"hello archive",
-time:new Date().toLocaleString(),
-profile:""
-});
-
-save();
-};
-
-/* ================= START ================= */
-load();
-
-</script>
 </head>
 
 <body>
@@ -248,9 +149,192 @@ load();
 <div class="feed" id="feed"></div>
 </div>
 
-<button class="open-editor" onclick="addPost()">
-+ 게시물 추가
-</button>
+<button class="open-editor" onclick="openType()">+ 게시물 추가</button>
+
+<!-- TYPE -->
+<div class="overlay" id="typeOverlay">
+<div class="editor">
+<button class="submit" onclick="openFan()">팬 답글</button><br><br>
+<button class="submit" onclick="openArtist()">아티스트 댓글</button>
+</div>
+</div>
+
+<!-- FAN -->
+<div class="overlay" id="fanOverlay">
+<div class="editor">
+<input class="input" id="fanName" placeholder="팬 이름"/>
+<input class="input" id="fanContent" placeholder="팬 내용"/>
+<button class="submit" onclick="addFan()">저장</button>
+</div>
+</div>
+
+<!-- ARTIST -->
+<div class="overlay" id="artistOverlay">
+<div class="editor">
+<input class="input" id="artistName" placeholder="아티스트 이름"/>
+<input class="input" id="artistContent" placeholder="내용"/>
+<button class="submit" onclick="addArtist()">저장</button>
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+getFirestore,
+doc,
+getDoc,
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
+authDomain: "weverse-archive.firebaseapp.com",
+projectId: "weverse-archive",
+storageBucket: "weverse-archive.firebasestorage.app",
+messagingSenderId: "81825623806",
+appId: "1:81825623806:web:4a815e85600f0f9de13faf"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ================= ARCHIVE ================= */
+const params = new URLSearchParams(location.search);
+const archiveId = params.get("archive") || "default";
+
+/* ================= DATA ================= */
+let posts = [];
+const feed = document.getElementById("feed");
+
+/* ================= SAFE BADGE ================= */
+function verifyBadge(){
+return `
+<svg viewBox="0 0 24 24" width="18" height="18">
+<path fill="#22D3C5" d="M12 2L14.7 4.1L18 3.8L19.1 7L22 9L20.8 12L22 15L19.1 17L18 20.2L14.7 19.9L12 22L9.3 19.9L6 20.2L4.9 17L2 15L3.2 12L2 9L4.9 7L6 3.8L9.3 4.1L12 2Z"/>
+</svg>`;
+}
+
+/* ================= LOAD ================= */
+async function load(){
+try{
+const ref = doc(db,"archives",archiveId);
+const snap = await getDoc(ref);
+
+if(snap.exists()){
+posts = snap.data().posts || [];
+}
+
+render();
+
+}catch(e){
+console.error("LOAD ERROR",e);
+}
+}
+
+/* ================= SAVE ================= */
+async function save(){
+try{
+await setDoc(doc(db,"archives",archiveId),{
+posts,
+updated:Date.now()
+});
+
+render();
+
+}catch(e){
+console.error("SAVE ERROR",e);
+}
+}
+
+/* ================= RENDER (FULL UI) ================= */
+function render(){
+feed.innerHTML="";
+
+posts.forEach((p,i)=>{
+
+const div=document.createElement("div");
+div.className="post";
+
+div.innerHTML=`
+<div class="header">
+<div class="left">
+<div class="profile"></div>
+<div>
+<div class="name">${p.name}</div>
+<div class="date">${p.time||""}</div>
+</div>
+</div>
+${verifyBadge()}
+</div>
+
+<div class="content">${p.content}</div>
+
+<div class="actions">
+<button class="like">♡</button>
+</div>
+
+<div class="reply-wrapper">
+${(p.replies||[]).map(r=>`
+<div class="reply">
+<div class="name">${r.name||""}</div>
+<div class="content">${r.content||""}</div>
+</div>
+`).join("")}
+</div>
+`;
+
+feed.appendChild(div);
+});
+
+/* like */
+document.querySelectorAll(".like").forEach(btn=>{
+btn.onclick=()=>{
+btn.classList.toggle("active");
+btn.textContent=btn.classList.contains("active")?"♥":"♡";
+};
+});
+}
+
+/* ================= ACTIONS ================= */
+window.addFan=async()=>{
+posts.push({
+type:"fan",
+name:fanName.value,
+content:fanContent.value,
+time:new Date().toLocaleString(),
+replies:[]
+});
+await save();
+closeAll();
+};
+
+window.addArtist=async()=>{
+posts.push({
+type:"artist",
+name:artistName.value,
+content:artistContent.value,
+time:new Date().toLocaleString(),
+replies:[]
+});
+await save();
+closeAll();
+};
+
+/* ================= UI ================= */
+window.openType=()=>{closeAll();typeOverlay.style.display="flex";}
+window.openFan=()=>{closeAll();fanOverlay.style.display="flex";}
+window.openArtist=()=>{closeAll();artistOverlay.style.display="flex";}
+
+function closeAll(){
+document.querySelectorAll(".overlay").forEach(o=>o.style.display="none");
+}
+
+/* ================= START ================= */
+load();
+
+</script>
 
 </body>
 </html>
