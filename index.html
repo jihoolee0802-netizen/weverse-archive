@@ -1,6 +1,6 @@
 <script type="module">
 //////////////////////////////////////////////////
-// Firebase
+// Firebase (GitHub Pages용 CDN 방식)
 //////////////////////////////////////////////////
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -24,8 +24,14 @@ const firebaseConfig = {
   measurementId: "G-GX6RB28S7D"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let app, db;
+
+try {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+} catch (e) {
+  console.error("Firebase init failed:", e);
+}
 
 //////////////////////////////////////////////////
 // archive id
@@ -44,27 +50,29 @@ let currentReplyIndex = null;
 const feed = document.getElementById("feed");
 
 //////////////////////////////////////////////////
-// safe Firestore load (흰화면 방지 핵심)
+// Firestore load (안 죽게 처리)
 //////////////////////////////////////////////////
 
 try {
-  onSnapshot(
-    query(
-      collection(db, "archives", archiveId, "posts"),
-      orderBy("createdAt", "asc")
-    ),
-    (snapshot) => {
-      posts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderPosts();
-    },
-    (err) => {
-      console.error("Firestore load error:", err);
-      posts = [];
-      renderPosts();
-    }
+  const q = query(
+    collection(db, "archives", archiveId, "posts"),
+    orderBy("createdAt", "asc")
   );
+
+  onSnapshot(q, (snapshot) => {
+    posts = snapshot.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+    renderPosts();
+  }, (err) => {
+    console.error("Firestore error:", err);
+    posts = [];
+    renderPosts();
+  });
+
 } catch (e) {
-  console.error("Firebase init error:", e);
+  console.error("onSnapshot failed:", e);
 }
 
 //////////////////////////////////////////////////
@@ -84,7 +92,7 @@ function verifyBadge() {
 }
 
 //////////////////////////////////////////////////
-// render (안전화 핵심)
+// render (원본 구조 유지 + 안전화)
 //////////////////////////////////////////////////
 
 function renderPosts() {
@@ -99,6 +107,7 @@ function renderPosts() {
     let html = "";
 
     try {
+
       if (post.type === "fan") {
         html += `
         <div class="header">
@@ -178,7 +187,7 @@ function renderPosts() {
       feed.appendChild(card);
 
     } catch (e) {
-      console.error("render error:", e);
+      console.error("render crash:", e);
     }
   });
 
@@ -223,7 +232,7 @@ function renderReply(r) {
 }
 
 //////////////////////////////////////////////////
-// open functions (window 안전)
+// open (window 안전)
 //////////////////////////////////////////////////
 
 window.openTypeSelector = () => {
@@ -252,27 +261,27 @@ function closeAll() {
 }
 
 //////////////////////////////////////////////////
-// SAVE (🔥 안전화)
+// SAVE (Firestore)
 //////////////////////////////////////////////////
 
-async function safeAdd(data) {
+async function savePost(data) {
   try {
     await addDoc(collection(db, "archives", archiveId, "posts"), {
       ...data,
       createdAt: serverTimestamp()
     });
   } catch (e) {
-    console.error("save error:", e);
-    alert("저장 실패 (Firebase 확인)");
+    console.error("save failed:", e);
+    alert("저장 실패");
   }
 }
 
 //////////////////////////////////////////////////
-// add fan
+// add functions (원본 유지)
 //////////////////////////////////////////////////
 
 window.addFanPost = async () => {
-  await safeAdd({
+  await savePost({
     type: "fan",
     fanName: document.getElementById("fanName")?.value || "",
     fanProfile: document.getElementById("fanProfile")?.value || "",
@@ -290,12 +299,8 @@ window.addFanPost = async () => {
   closeAll();
 };
 
-//////////////////////////////////////////////////
-// add artist
-//////////////////////////////////////////////////
-
 window.addArtistComment = async () => {
-  await safeAdd({
+  await savePost({
     type: "artist",
     artistName: document.getElementById("artistName")?.value || "",
     artistColor: document.getElementById("artistColor")?.value || "#9EC4E8",
@@ -308,15 +313,11 @@ window.addArtistComment = async () => {
   closeAll();
 };
 
-//////////////////////////////////////////////////
-// reply
-//////////////////////////////////////////////////
-
 window.submitReply = async () => {
   const post = posts[currentReplyIndex];
   if (!post) return;
 
-  await safeAdd({
+  await savePost({
     ...post,
     replies: [
       ...(post.replies || []),
