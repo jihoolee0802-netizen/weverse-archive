@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Weverse Archive</title>
 
 <style>
@@ -56,23 +54,40 @@ flex-shrink:0;
 display:flex;
 align-items:center;
 gap:6px;
-flex-wrap:wrap;
+flex-wrap:nowrap;
 }
 
-.name{ font-size:18px; font-weight:700; }
+.name{
+font-size:18px;
+font-weight:700;
+}
 
-.date{ margin-top:4px; font-size:14px; color:#8e8e93; }
+.date{
+margin-top:4px;
+font-size:14px;
+color:#8e8e93;
+}
 
 .verify{
-display:inline-flex;
+display:flex;
 align-items:center;
 justify-content:center;
 width:18px;
 height:18px;
-vertical-align:middle;
+flex-shrink:0;
 }
 
-.content{ font-size:18px; line-height:1.8; word-break:keep-all; }
+.verify svg{
+width:18px;
+height:18px;
+display:block;
+}
+
+.content{
+font-size:18px;
+line-height:1.8;
+word-break:keep-all;
+}
 
 .actions{ margin-top:18px; }
 
@@ -191,7 +206,6 @@ color:#9EC4E8;
 font-size:15px;
 }
 </style>
-
 </head>
 
 <body>
@@ -200,27 +214,24 @@ font-size:15px;
 <div class="feed" id="feed"></div>
 </div>
 
-<button class="open-editor" onclick="openTypeSelector()">
-+ 게시물 추가
-</button>
+<button class="open-editor" onclick="openTypeSelector()">+ 게시물 추가</button>
 
-<!-- TYPE -->
+<!-- overlays -->
 <div class="overlay" id="typeOverlay">
 <div class="editor">
 <div class="editor-title">무엇을 추가할까?</div>
-<button class="submit" onclick="openFanPostEditor()" style="margin-bottom:12px;">팬 답글</button>
+<button class="submit" onclick="openFanPostEditor()">팬 답글</button>
 <button class="submit" onclick="openArtistCommentEditor()">아티스트 댓글</button>
 </div>
 </div>
 
-<!-- FAN -->
 <div class="overlay" id="fanOverlay">
 <div class="editor">
 <div class="editor-title">팬 답글 생성</div>
 
 <input class="input" id="fanName" placeholder="팬 이름"/>
-<input class="input" id="fanProfile" placeholder="팬 프로필"/>
-<input class="input" id="fanTime" placeholder="작성 시간"/>
+<input class="input" id="fanProfile"/>
+<input class="input" id="fanTime"/>
 <textarea class="input" id="fanContent"></textarea>
 
 <hr>
@@ -233,15 +244,13 @@ font-size:15px;
 <input class="input" id="fanArtistTime"/>
 <textarea class="input" id="fanArtistReply"></textarea>
 
-<button class="submit" onclick="addFanPost()">저장하기</button>
+<button class="submit" onclick="addFanPost()">저장</button>
 </div>
 </div>
 
-<!-- ARTIST -->
 <div class="overlay" id="artistOverlay">
 <div class="editor">
-
-<div class="editor-title">아티스트 댓글 생성</div>
+<div class="editor-title">아티스트 댓글</div>
 
 <input class="input" id="artistName"/>
 <input class="input" id="artistColor"/>
@@ -249,15 +258,12 @@ font-size:15px;
 <input class="input" id="artistTime"/>
 <textarea class="input" id="artistContent"></textarea>
 
-<button class="submit" onclick="addArtistComment()">저장하기</button>
-
+<button class="submit" onclick="addArtistComment()">저장</button>
 </div>
 </div>
 
-<!-- REPLY -->
 <div class="overlay" id="replyOverlay">
 <div class="editor">
-
 <div class="editor-title">아티스트 답글 추가</div>
 
 <input class="input" id="replyArtistName"/>
@@ -266,9 +272,8 @@ font-size:15px;
 <input class="input" id="replyArtistTime"/>
 <textarea class="input" id="replyArtistContent"></textarea>
 
-<button class="submit" onclick="submitReply()">추가하기</button>
-<button class="submit" onclick="finishReplyMode()" style="background:#777;margin-top:10px;">완료</button>
-
+<button class="submit" onclick="submitReply()">추가</button>
+<button class="submit" onclick="finishReplyMode()" style="background:#666;margin-top:10px;">완료</button>
 </div>
 </div>
 
@@ -286,7 +291,7 @@ let replyEditMode = false;
 
 const feed = document.getElementById('feed');
 
-/* VERIFY */
+/* badge */
 function verifyBadge(){
 return `
 <div class="verify">
@@ -297,12 +302,12 @@ return `
 </div>`;
 }
 
-/* RENDER */
+/* render */
 function renderPosts(){
-feed.innerHTML = '';
+feed.innerHTML='';
 
-posts.forEach((post,index)=>{
-const card = document.createElement('div');
+posts.forEach((post,i)=>{
+const card=document.createElement('div');
 card.className='post';
 
 let html='';
@@ -329,12 +334,7 @@ html+=`
 post.replies.forEach(r=>html+=renderReply(r));
 
 html+=`
-${replyEditMode ?
-`<button class="add-reply-btn" onclick="addReplyPrompt(${index})">+ 추가</button>
-<button class="add-reply-btn" onclick="finishReplyMode()">완료</button>`
-:
-`<button class="add-reply-btn" onclick="startReplyMode(${index})">아티스트 답글 추가</button>`
-}
+<button class="add-reply-btn" onclick="startReplyMode(${i})">아티스트 답글 추가</button>
 </div>`;
 }
 
@@ -363,12 +363,7 @@ ${post.replies.length?'<div class="reply-label">아티스트 답글</div>':''}
 post.replies.forEach(r=>html+=renderReply(r));
 
 html+=`
-${replyEditMode ?
-`<button class="add-reply-btn" onclick="addReplyPrompt(${index})">+ 추가</button>
-<button class="add-reply-btn" onclick="finishReplyMode()">완료</button>`
-:
-`<button class="add-reply-btn" onclick="startReplyMode(${index})">아티스트 답글 추가</button>`
-}
+<button class="add-reply-btn" onclick="startReplyMode(${i})">아티스트 답글 추가</button>
 </div>`;
 }
 
@@ -381,6 +376,7 @@ b.onclick=()=>b.classList.toggle('active');
 });
 }
 
+/* reply */
 function renderReply(r){
 return `
 <div class="reply">
@@ -400,41 +396,42 @@ ${verifyBadge()}
 </div>`;
 }
 
-/* MODE */
+/* mode */
 function startReplyMode(i){
 replyEditMode=true;
-addReplyPrompt(i);
+currentReplyIndex=i;
+openReply();
 }
 
 function finishReplyMode(){
 replyEditMode=false;
+currentReplyIndex=null;
 closeAll();
 renderPosts();
 }
 
-/* OPEN */
-function openTypeSelector(){closeAll();document.getElementById('typeOverlay').style.display='flex';}
-function openFanPostEditor(){closeAll();document.getElementById('fanOverlay').style.display='flex';}
-function openArtistCommentEditor(){closeAll();document.getElementById('artistOverlay').style.display='flex';}
-function addReplyPrompt(i){currentReplyIndex=i;closeAll();document.getElementById('replyOverlay').style.display='flex';}
+/* overlay */
+function openTypeSelector(){closeAll();typeOverlay.style.display='flex';}
+function openFanPostEditor(){closeAll();fanOverlay.style.display='flex';}
+function openArtistCommentEditor(){closeAll();artistOverlay.style.display='flex';}
+function openReply(){closeAll();replyOverlay.style.display='flex';}
 
-/* CLOSE */
-function closeAll(){document.querySelectorAll('.overlay').forEach(o=>o.style.display='none');}
+function closeAll(){
+document.querySelectorAll('.overlay').forEach(o=>o.style.display='none');
+}
 
-/* SAVE */
+/* save */
 function save(){
 localStorage.setItem(STORAGE_KEY,JSON.stringify(posts));
 renderPosts();
 closeAll();
 }
 
-/* ADD */
-function addFanPost(){posts.push({
+/* add */
+function addFanPost(){
+posts.push({
 type:'fan',
-fanName:fanName.value,
-fanProfile:fanProfile.value,
-fanTime:fanTime.value,
-fanContent:fanContent.value,
+fanName,fanProfile,fanTime,fanContent,
 replies:[{
 artistName:fanArtistName.value,
 artistColor:fanArtistColor.value||'#9EC4E8',
@@ -442,17 +439,18 @@ artistProfile:fanArtistProfile.value,
 artistTime:fanArtistTime.value,
 artistReply:fanArtistReply.value
 }]
-});save();}
+});
+save();
+}
 
-function addArtistComment(){posts.push({
+function addArtistComment(){
+posts.push({
 type:'artist',
-artistName:artistName.value,
-artistColor:artistColor.value||'#9EC4E8',
-artistProfile:artistProfile.value,
-artistTime:artistTime.value,
-artistContent:artistContent.value,
+artistName,artistColor,artistProfile,artistTime,artistContent,
 replies:[]
-});save();}
+});
+save();
+}
 
 function submitReply(){
 posts[currentReplyIndex].replies.push({
@@ -463,7 +461,7 @@ artistTime:replyArtistTime.value,
 artistReply:replyArtistContent.value
 });
 save();
-addReplyPrompt(currentReplyIndex);
+openReply();
 }
 
 renderPosts();
