@@ -1,6 +1,6 @@
 <script type="module">
 //////////////////////////////////////////////////
-// Firebase import
+// Firebase
 //////////////////////////////////////////////////
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -13,10 +13,6 @@ import {
   orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-//////////////////////////////////////////////////
-// Firebase config (너 그대로)
-//////////////////////////////////////////////////
 
 const firebaseConfig = {
   apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
@@ -32,61 +28,53 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 //////////////////////////////////////////////////
-// archive 분리 (원본 유지)
+// archive id
 //////////////////////////////////////////////////
 
 const params = new URLSearchParams(location.search);
-const archiveId = params.get('archive') || 'default';
+const archiveId = params.get("archive") || "default";
 
 //////////////////////////////////////////////////
-// data (🔥 localStorage 제거 → Firestore)
+// state
 //////////////////////////////////////////////////
 
 let posts = [];
 let currentReplyIndex = null;
 
-const feed = document.getElementById('feed');
+const feed = document.getElementById("feed");
 
 //////////////////////////////////////////////////
-// 실시간 로딩 (핵심)
+// safe Firestore load (흰화면 방지 핵심)
 //////////////////////////////////////////////////
 
-onSnapshot(
-  query(
-    collection(db, "archives", archiveId, "posts"),
-    orderBy("createdAt", "asc")
-  ),
-  (snapshot) => {
-    posts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    renderPosts();
-  }
-);
-
-//////////////////////////////////////////////////
-// Firestore 저장 함수
-//////////////////////////////////////////////////
-
-async function saveToFirebase(post) {
-  await addDoc(
-    collection(db, "archives", archiveId, "posts"),
-    {
-      ...post,
-      createdAt: serverTimestamp()
+try {
+  onSnapshot(
+    query(
+      collection(db, "archives", archiveId, "posts"),
+      orderBy("createdAt", "asc")
+    ),
+    (snapshot) => {
+      posts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderPosts();
+    },
+    (err) => {
+      console.error("Firestore load error:", err);
+      posts = [];
+      renderPosts();
     }
   );
+} catch (e) {
+  console.error("Firebase init error:", e);
 }
 
 //////////////////////////////////////////////////
-// 인증마크 (원본 그대로)
+// verify badge (원본 유지)
 //////////////////////////////////////////////////
 
 function verifyBadge() {
   return `
   <div class="verify">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 24 24">
       <path fill="#22D3C5"
         d="M12 2L14.7 4.1L18 3.8L19.1 7L22 9L20.8 12L22 15L19.1 17L18 20.2L14.7 19.9L12 22L9.3 19.9L6 20.2L4.9 17L2 15L3.2 12L2 9L4.9 7L6 3.8L9.3 4.1L12 2Z"/>
       <path fill="white"
@@ -96,135 +84,137 @@ function verifyBadge() {
 }
 
 //////////////////////////////////////////////////
-// render (원본 구조 유지)
+// render (안전화 핵심)
 //////////////////////////////////////////////////
 
 function renderPosts() {
-  feed.innerHTML = '';
+  if (!feed) return;
+
+  feed.innerHTML = "";
 
   posts.forEach((post, index) => {
+    const card = document.createElement("div");
+    card.className = "post";
 
-    const card = document.createElement('div');
-    card.className = 'post';
+    let html = "";
 
-    let html = '';
-
-    if (post.type === 'fan') {
-
-      html += `
-      <div class="header">
-        <div class="left">
-          <div class="profile">
-            <img src="${post.fanProfile}">
-          </div>
-          <div>
-            <div class="name">${post.fanName}</div>
-            <div class="date">${post.fanTime}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="content">${post.fanContent}</div>
-
-      <div class="actions">
-        <button class="like">♡</button>
-      </div>
-
-      <div class="reply-wrapper">
-        <div class="reply-label">아티스트 답글</div>
-      `;
-
-      (post.replies || []).forEach(reply => {
-        html += renderReply(reply);
-      });
-
-      html += `
-        <button class="add-reply-btn" onclick="addReplyPrompt(${index})">
-          + 아티스트 답글 추가
-        </button>
-      </div>
-      `;
-    }
-
-    if (post.type === 'artist') {
-
-      html += `
-      <div class="header">
-        <div class="left">
-          <div class="profile">
-            <img src="${post.artistProfile}">
-          </div>
-          <div>
-            <div class="name-row">
-              <div class="name" style="color:${post.artistColor}">
-                ${post.artistName}
-              </div>
-              ${verifyBadge()}
+    try {
+      if (post.type === "fan") {
+        html += `
+        <div class="header">
+          <div class="left">
+            <div class="profile">
+              <img src="${post.fanProfile || ""}">
             </div>
-            <div class="date">${post.artistTime}</div>
+            <div>
+              <div class="name">${post.fanName || ""}</div>
+              <div class="date">${post.fanTime || ""}</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="content">${post.artistContent}</div>
+        <div class="content">${post.fanContent || ""}</div>
 
-      <div class="actions">
-        <button class="like">♡</button>
-      </div>
+        <div class="actions">
+          <button class="like">♡</button>
+        </div>
 
-      <div class="reply-wrapper">
-        ${post.replies?.length ? '<div class="reply-label">아티스트 답글</div>' : ''}
-      `;
+        <div class="reply-wrapper">
+          <div class="reply-label">아티스트 답글</div>
+        `;
 
-      (post.replies || []).forEach(reply => {
-        html += renderReply(reply);
-      });
+        (post.replies || []).forEach(r => {
+          html += renderReply(r);
+        });
 
-      html += `
-        <button class="add-reply-btn" onclick="addReplyPrompt(${index})">
-          + 아티스트 답글 추가
-        </button>
-      </div>
-      `;
+        html += `
+          <button class="add-reply-btn" onclick="addReplyPrompt(${index})">
+            + 아티스트 답글 추가
+          </button>
+        </div>`;
+      }
+
+      if (post.type === "artist") {
+        html += `
+        <div class="header">
+          <div class="left">
+            <div class="profile">
+              <img src="${post.artistProfile || ""}">
+            </div>
+            <div>
+              <div class="name-row">
+                <div class="name" style="color:${post.artistColor || "#9EC4E8"}">
+                  ${post.artistName || ""}
+                </div>
+                ${verifyBadge()}
+              </div>
+              <div class="date">${post.artistTime || ""}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content">${post.artistContent || ""}</div>
+
+        <div class="actions">
+          <button class="like">♡</button>
+        </div>
+
+        <div class="reply-wrapper">
+          ${post.replies?.length ? '<div class="reply-label">아티스트 답글</div>' : ""}
+        `;
+
+        (post.replies || []).forEach(r => {
+          html += renderReply(r);
+        });
+
+        html += `
+          <button class="add-reply-btn" onclick="addReplyPrompt(${index})">
+            + 아티스트 답글 추가
+          </button>
+        </div>`;
+      }
+
+      card.innerHTML = html;
+      feed.appendChild(card);
+
+    } catch (e) {
+      console.error("render error:", e);
     }
-
-    card.innerHTML = html;
-    feed.appendChild(card);
   });
 
-  document.querySelectorAll('.like').forEach(btn => {
+  document.querySelectorAll(".like").forEach(btn => {
     btn.onclick = function () {
-      this.classList.toggle('active');
-      this.textContent = this.classList.contains('active') ? '♥' : '♡';
+      this.classList.toggle("active");
+      this.textContent = this.classList.contains("active") ? "♥" : "♡";
     };
   });
 }
 
 //////////////////////////////////////////////////
-// reply (원본 유지)
+// reply
 //////////////////////////////////////////////////
 
-function renderReply(reply) {
+function renderReply(r) {
   return `
   <div class="reply">
     <div class="header">
       <div class="left">
         <div class="profile">
-          <img src="${reply.artistProfile}">
+          <img src="${r.artistProfile || ""}">
         </div>
         <div>
           <div class="name-row">
-            <div class="name" style="color:${reply.artistColor}">
-              ${reply.artistName}
+            <div class="name" style="color:${r.artistColor || "#9EC4E8"}">
+              ${r.artistName || ""}
             </div>
             ${verifyBadge()}
           </div>
-          <div class="date">${reply.artistTime}</div>
+          <div class="date">${r.artistTime || ""}</div>
         </div>
       </div>
     </div>
 
-    <div class="content">${reply.artistReply}</div>
+    <div class="content">${r.artistReply || ""}</div>
 
     <div class="actions">
       <button class="like">♡</button>
@@ -233,102 +223,112 @@ function renderReply(reply) {
 }
 
 //////////////////////////////////////////////////
-// open/close (원본 유지)
+// open functions (window 안전)
 //////////////////////////////////////////////////
 
 window.openTypeSelector = () => {
   closeAll();
-  document.getElementById('typeOverlay').style.display = 'flex';
+  document.getElementById("typeOverlay").style.display = "flex";
 };
 
 window.openFanPostEditor = () => {
   closeAll();
-  document.getElementById('fanOverlay').style.display = 'flex';
+  document.getElementById("fanOverlay").style.display = "flex";
 };
 
 window.openArtistCommentEditor = () => {
   closeAll();
-  document.getElementById('artistOverlay').style.display = 'flex';
+  document.getElementById("artistOverlay").style.display = "flex";
 };
 
-window.addReplyPrompt = (index) => {
-  currentReplyIndex = index;
+window.addReplyPrompt = (i) => {
+  currentReplyIndex = i;
   closeAll();
-  document.getElementById('replyOverlay').style.display = 'flex';
+  document.getElementById("replyOverlay").style.display = "flex";
 };
 
 function closeAll() {
-  document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+  document.querySelectorAll(".overlay").forEach(o => o.style.display = "none");
 }
 
-document.querySelectorAll('.overlay').forEach(o => {
-  o.addEventListener('click', e => {
-    if (e.target === o) o.style.display = 'none';
-  });
-});
+//////////////////////////////////////////////////
+// SAVE (🔥 안전화)
+//////////////////////////////////////////////////
+
+async function safeAdd(data) {
+  try {
+    await addDoc(collection(db, "archives", archiveId, "posts"), {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+  } catch (e) {
+    console.error("save error:", e);
+    alert("저장 실패 (Firebase 확인)");
+  }
+}
 
 //////////////////////////////////////////////////
-// SAVE (🔥 핵심: Firebase 저장)
+// add fan
 //////////////////////////////////////////////////
 
 window.addFanPost = async () => {
-
-  await saveToFirebase({
-    type: 'fan',
-    fanName: fanName.value,
-    fanProfile: fanProfile.value,
-    fanTime: fanTime.value,
-    fanContent: fanContent.value,
+  await safeAdd({
+    type: "fan",
+    fanName: document.getElementById("fanName")?.value || "",
+    fanProfile: document.getElementById("fanProfile")?.value || "",
+    fanTime: document.getElementById("fanTime")?.value || "",
+    fanContent: document.getElementById("fanContent")?.value || "",
     replies: [{
-      artistName: fanArtistName.value,
-      artistColor: fanArtistColor.value || '#9EC4E8',
-      artistProfile: fanArtistProfile.value,
-      artistTime: fanArtistTime.value,
-      artistReply: fanArtistReply.value
+      artistName: document.getElementById("fanArtistName")?.value || "",
+      artistColor: document.getElementById("fanArtistColor")?.value || "#9EC4E8",
+      artistProfile: document.getElementById("fanArtistProfile")?.value || "",
+      artistTime: document.getElementById("fanArtistTime")?.value || "",
+      artistReply: document.getElementById("fanArtistReply")?.value || ""
     }]
   });
 
   closeAll();
 };
 
-window.addArtistComment = async () => {
+//////////////////////////////////////////////////
+// add artist
+//////////////////////////////////////////////////
 
-  await saveToFirebase({
-    type: 'artist',
-    artistName: artistName.value,
-    artistColor: artistColor.value || '#9EC4E8',
-    artistProfile: artistProfile.value,
-    artistTime: artistTime.value,
-    artistContent: artistContent.value,
+window.addArtistComment = async () => {
+  await safeAdd({
+    type: "artist",
+    artistName: document.getElementById("artistName")?.value || "",
+    artistColor: document.getElementById("artistColor")?.value || "#9EC4E8",
+    artistProfile: document.getElementById("artistProfile")?.value || "",
+    artistTime: document.getElementById("artistTime")?.value || "",
+    artistContent: document.getElementById("artistContent")?.value || "",
     replies: []
   });
 
   closeAll();
 };
 
+//////////////////////////////////////////////////
+// reply
+//////////////////////////////////////////////////
+
 window.submitReply = async () => {
-
   const post = posts[currentReplyIndex];
+  if (!post) return;
 
-  const newReplies = [
-    ...(post.replies || []),
-    {
-      artistName: replyArtistName.value,
-      artistColor: replyArtistColor.value || '#9EC4E8',
-      artistProfile: replyArtistProfile.value,
-      artistTime: replyArtistTime.value,
-      artistReply: replyArtistContent.value
-    }
-  ];
-
-  await addDoc(
-    collection(db, "archives", archiveId, "posts"),
-    {
-      ...post,
-      replies: newReplies,
-      createdAt: serverTimestamp()
-    }
-  );
+  await safeAdd({
+    ...post,
+    replies: [
+      ...(post.replies || []),
+      {
+        artistName: document.getElementById("replyArtistName")?.value || "",
+        artistColor: document.getElementById("replyArtistColor")?.value || "#9EC4E8",
+        artistProfile: document.getElementById("replyArtistProfile")?.value || "",
+        artistTime: document.getElementById("replyArtistTime")?.value || "",
+        artistReply: document.getElementById("replyArtistContent")?.value || ""
+      }
+    ]
+  });
 
   closeAll();
 };
@@ -338,5 +338,4 @@ window.submitReply = async () => {
 //////////////////////////////////////////////////
 
 renderPosts();
-
 </script>
