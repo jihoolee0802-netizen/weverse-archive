@@ -17,6 +17,7 @@
 
 *{
 box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
 }
 
 body{
@@ -44,6 +45,7 @@ border-radius:30px;
 padding:24px;
 border:1px solid #ececec;
 box-shadow:0 4px 20px rgba(0,0,0,0.05);
+overflow:hidden;
 }
 
 .header{
@@ -56,6 +58,7 @@ margin-bottom:16px;
 .left{
 display:flex;
 gap:14px;
+align-items:flex-start;
 }
 
 .profile{
@@ -71,6 +74,7 @@ flex-shrink:0;
 width:100%;
 height:100%;
 object-fit:cover;
+display:block;
 }
 
 .name-row{
@@ -97,17 +101,19 @@ align-items:center;
 justify-content:center;
 width:18px;
 height:18px;
+flex-shrink:0;
 }
 
 .verify svg{
 width:18px;
 height:18px;
+display:block;
 }
 
 .content{
 font-size:18px;
 line-height:1.8;
-word-break:keep-all;
+word-break:break-word;
 white-space:pre-wrap;
 }
 
@@ -121,6 +127,7 @@ background:none;
 font-size:30px;
 cursor:pointer;
 color:#999;
+padding:0;
 }
 
 .like.active{
@@ -142,6 +149,10 @@ margin-left:20px;
 padding-left:18px;
 border-left:3px solid #e5e5e5;
 margin-bottom:26px;
+}
+
+.reply:last-child{
+margin-bottom:0;
 }
 
 .open-editor{
@@ -208,6 +219,7 @@ margin-bottom:20px;
 .input{
 width:100%;
 border:none;
+outline:none;
 background:#f4f4f5;
 
 border-radius:18px;
@@ -243,7 +255,7 @@ cursor:pointer;
 
 .add-reply-btn{
 width:100%;
-margin-top:14px;
+margin-top:18px;
 
 border:none;
 background:#edf5fc;
@@ -505,18 +517,17 @@ made with love ♡
 <script>
 
 //////////////////////////////////////////////////
-// FIREBASE
+// Firebase
 //////////////////////////////////////////////////
 
 const firebaseConfig = {
-
 apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
 authDomain: "weverse-archive.firebaseapp.com",
 projectId: "weverse-archive",
 storageBucket: "weverse-archive.firebasestorage.app",
 messagingSenderId: "81825623806",
-appId: "1:81825623806:web:4a815e85600f0f9de13faf"
-
+appId: "1:81825623806:web:4a815e85600f0f9de13faf",
+measurementId: "G-GX6RB28S7D"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -524,7 +535,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 //////////////////////////////////////////////////
-// archive
+// archive 분리
 //////////////////////////////////////////////////
 
 const params =
@@ -533,22 +544,19 @@ new URLSearchParams(location.search);
 const archiveId =
 params.get('archive') || 'default';
 
-const COLLECTION =
-'archive_' + archiveId;
-
 //////////////////////////////////////////////////
 // data
 //////////////////////////////////////////////////
 
 let posts = [];
 
-let currentReplyIndex = null;
+let currentReplyId = null;
 
 const feed =
 document.getElementById('feed');
 
 //////////////////////////////////////////////////
-// verify
+// 인증마크
 //////////////////////////////////////////////////
 
 function verifyBadge(){
@@ -581,32 +589,6 @@ d="M10.2 15.5L6.8 12.1L8 10.9L10.2 13.1L16 7.3L17.2 8.5L10.2 15.5Z"
 }
 
 //////////////////////////////////////////////////
-// realtime load
-//////////////////////////////////////////////////
-
-db.collection(COLLECTION)
-.onSnapshot(snapshot=>{
-
-posts = [];
-
-snapshot.forEach(doc=>{
-
-posts.push({
-id:doc.id,
-...doc.data()
-});
-
-});
-
-posts.sort((a,b)=>
-(b.createdAt || 0) - (a.createdAt || 0)
-);
-
-renderPosts();
-
-});
-
-//////////////////////////////////////////////////
 // render
 //////////////////////////////////////////////////
 
@@ -614,7 +596,7 @@ function renderPosts(){
 
 feed.innerHTML = '';
 
-posts.forEach((post,index)=>{
+posts.forEach((post)=>{
 
 const card =
 document.createElement('div');
@@ -624,7 +606,7 @@ card.className = 'post';
 let html = '';
 
 //////////////////////////////////////////////////
-// FAN POST
+// 팬 게시물
 //////////////////////////////////////////////////
 
 if(post.type === 'fan'){
@@ -681,7 +663,7 @@ html += `
 
 <button
 class="add-reply-btn"
-onclick="addReplyPrompt(${index})"
+onclick="addReplyPrompt('${post.id}')"
 >
 + 아티스트 답글 추가
 </button>
@@ -693,7 +675,7 @@ onclick="addReplyPrompt(${index})"
 }
 
 //////////////////////////////////////////////////
-// ARTIST POST
+// 아티스트 게시물
 //////////////////////////////////////////////////
 
 if(post.type === 'artist'){
@@ -759,7 +741,7 @@ html += `
 
 <button
 class="add-reply-btn"
-onclick="addReplyPrompt(${index})"
+onclick="addReplyPrompt('${post.id}')"
 >
 + 아티스트 답글 추가
 </button>
@@ -777,7 +759,7 @@ feed.appendChild(card);
 });
 
 //////////////////////////////////////////////////
-// like
+// 좋아요
 //////////////////////////////////////////////////
 
 document
@@ -800,7 +782,7 @@ this.classList.contains('active')
 }
 
 //////////////////////////////////////////////////
-// render reply
+// 답글 렌더
 //////////////////////////////////////////////////
 
 function renderReply(reply){
@@ -857,7 +839,7 @@ ${reply.artistReply || ''}
 }
 
 //////////////////////////////////////////////////
-// open
+// overlay open
 //////////////////////////////////////////////////
 
 function openTypeSelector(){
@@ -887,9 +869,9 @@ document.getElementById('artistOverlay')
 
 }
 
-function addReplyPrompt(index){
+function addReplyPrompt(id){
 
-currentReplyIndex = index;
+currentReplyId = id;
 
 closeAll();
 
@@ -899,7 +881,7 @@ document.getElementById('replyOverlay')
 }
 
 //////////////////////////////////////////////////
-// close
+// overlay close
 //////////////////////////////////////////////////
 
 function closeAll(){
@@ -927,12 +909,37 @@ overlay.style.display = 'none';
 });
 
 //////////////////////////////////////////////////
-// add fan
+// Firestore realtime
+//////////////////////////////////////////////////
+
+db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.orderBy("createdAt","desc")
+.onSnapshot(snapshot=>{
+
+posts = snapshot.docs.map(doc=>({
+
+id: doc.id,
+...doc.data()
+
+}));
+
+renderPosts();
+
+});
+
+//////////////////////////////////////////////////
+// 팬 게시물 추가
 //////////////////////////////////////////////////
 
 async function addFanPost(){
 
-await db.collection(COLLECTION).add({
+await db
+.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.add({
 
 type:'fan',
 
@@ -972,7 +979,7 @@ document.getElementById('fanArtistReply').value
 
 ],
 
-createdAt:Date.now()
+createdAt: Date.now()
 
 });
 
@@ -981,12 +988,16 @@ closeAll();
 }
 
 //////////////////////////////////////////////////
-// add artist
+// 아티스트 게시물 추가
 //////////////////////////////////////////////////
 
 async function addArtistComment(){
 
-await db.collection(COLLECTION).add({
+await db
+.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.add({
 
 type:'artist',
 
@@ -1008,7 +1019,7 @@ document.getElementById('artistContent').value,
 
 replies:[],
 
-createdAt:Date.now()
+createdAt: Date.now()
 
 });
 
@@ -1017,18 +1028,26 @@ closeAll();
 }
 
 //////////////////////////////////////////////////
-// add reply
+// 답글 추가
 //////////////////////////////////////////////////
 
 async function submitReply(){
 
-const post = posts[currentReplyIndex];
+const docRef =
+db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.doc(currentReplyId);
 
-const updatedReplies = [
+const docSnap =
+await docRef.get();
 
-...(post.replies || []),
+const data = docSnap.data();
 
-{
+const replies =
+data.replies || [];
+
+replies.push({
 
 artistName:
 document.getElementById('replyArtistName').value,
@@ -1046,15 +1065,11 @@ document.getElementById('replyArtistTime').value,
 artistReply:
 document.getElementById('replyArtistContent').value
 
-}
+});
 
-];
+await docRef.update({
 
-await db.collection(COLLECTION)
-.doc(post.id)
-.update({
-
-replies:updatedReplies
+replies: replies
 
 });
 
