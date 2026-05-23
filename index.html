@@ -22,14 +22,15 @@ box-sizing:border-box;
 
 body{
 margin:0;
-padding:24px 16px 120px;
+padding:24px 10px 120px;
 background:#f5f5f7;
 font-family:'Pretendard',sans-serif;
 color:#111;
 }
 
 .container{
-max-width:560px;
+width:100%;
+max-width:680px;
 margin:auto;
 }
 
@@ -46,6 +47,7 @@ padding:24px;
 border:1px solid #ececec;
 box-shadow:0 4px 20px rgba(0,0,0,0.05);
 overflow:hidden;
+width:100%;
 }
 
 .header{
@@ -101,7 +103,6 @@ align-items:center;
 justify-content:center;
 width:18px;
 height:18px;
-flex-shrink:0;
 }
 
 .verify svg{
@@ -151,18 +152,13 @@ border-left:3px solid #e5e5e5;
 margin-bottom:26px;
 }
 
-.reply:last-child{
-margin-bottom:0;
-}
-
 .open-editor{
 position:fixed;
 bottom:24px;
 left:50%;
 transform:translateX(-50%);
-
-width:calc(100% - 32px);
-max-width:560px;
+width:calc(100% - 20px);
+max-width:680px;
 
 border:none;
 border-radius:22px;
@@ -186,7 +182,6 @@ z-index:999;
 .overlay{
 position:fixed;
 inset:0;
-
 background:rgba(0,0,0,0.35);
 
 display:none;
@@ -198,7 +193,7 @@ z-index:1000;
 
 .editor{
 width:100%;
-max-width:600px;
+max-width:680px;
 
 background:white;
 
@@ -220,6 +215,7 @@ margin-bottom:20px;
 width:100%;
 border:none;
 outline:none;
+
 background:#f4f4f5;
 
 border-radius:18px;
@@ -255,7 +251,7 @@ cursor:pointer;
 
 .add-reply-btn{
 width:100%;
-margin-top:18px;
+margin-top:16px;
 
 border:none;
 background:#edf5fc;
@@ -272,11 +268,46 @@ font-weight:700;
 cursor:pointer;
 }
 
+.complete-btn{
+width:100%;
+margin-top:10px;
+
+border:none;
+background:#f3f3f3;
+
+color:#666;
+
+border-radius:16px;
+
+padding:14px;
+
+font-size:15px;
+font-weight:700;
+
+cursor:pointer;
+}
+
 footer{
 text-align:center;
 margin-top:40px;
 color:#9EC4E8;
 font-size:15px;
+}
+
+@media (max-width:700px){
+
+.container{
+max-width:560px;
+}
+
+.open-editor{
+max-width:560px;
+}
+
+.editor{
+max-width:560px;
+}
+
 }
 
 </style>
@@ -301,7 +332,6 @@ onclick="openTypeSelector()"
 <!-- 타입 선택 -->
 
 <div class="overlay" id="typeOverlay">
-
 <div class="editor">
 
 <div class="editor-title">
@@ -324,36 +354,20 @@ onclick="openArtistCommentEditor()"
 </button>
 
 </div>
-
 </div>
 
 <!-- 팬 답글 -->
 
 <div class="overlay" id="fanOverlay">
-
 <div class="editor">
 
 <div class="editor-title">
 팬 답글 생성
 </div>
 
-<input
-class="input"
-id="fanName"
-placeholder="팬 이름 / 팬덤명"
-/>
-
-<input
-class="input"
-id="fanProfile"
-placeholder="팬 프로필 사진 URL"
-/>
-
-<input
-class="input"
-id="fanTime"
-placeholder="팬 작성 시간"
-/>
+<input class="input" id="fanName" placeholder="팬 이름 / 팬덤명">
+<input class="input" id="fanProfile" placeholder="팬 프로필 사진 URL">
+<input class="input" id="fanTime" placeholder="팬 작성 시간">
 
 <textarea
 class="input"
@@ -367,29 +381,10 @@ placeholder="팬 질문 입력"
 아티스트 답글
 </div>
 
-<input
-class="input"
-id="fanArtistName"
-placeholder="아티스트 이름"
-/>
-
-<input
-class="input"
-id="fanArtistColor"
-placeholder="아티스트 이름 색상 (#9EC4E8)"
-/>
-
-<input
-class="input"
-id="fanArtistProfile"
-placeholder="아티스트 사진 URL"
-/>
-
-<input
-class="input"
-id="fanArtistTime"
-placeholder="아티스트 작성 시간"
-/>
+<input class="input" id="fanArtistName" placeholder="아티스트 이름">
+<input class="input" id="fanArtistColor" placeholder="아티스트 이름 색상 (#9EC4E8)">
+<input class="input" id="fanArtistProfile" placeholder="아티스트 사진 URL">
+<input class="input" id="fanArtistTime" placeholder="아티스트 작성 시간">
 
 <textarea
 class="input"
@@ -405,42 +400,21 @@ onclick="addFanPost()"
 </button>
 
 </div>
-
 </div>
 
 <!-- 아티스트 댓글 -->
 
 <div class="overlay" id="artistOverlay">
-
 <div class="editor">
 
 <div class="editor-title">
 아티스트 댓글 생성
 </div>
 
-<input
-class="input"
-id="artistName"
-placeholder="아티스트 이름"
-/>
-
-<input
-class="input"
-id="artistColor"
-placeholder="아티스트 이름 색상 (#9EC4E8)"
-/>
-
-<input
-class="input"
-id="artistProfile"
-placeholder="아티스트 사진 URL"
-/>
-
-<input
-class="input"
-id="artistTime"
-placeholder="작성 시간"
-/>
+<input class="input" id="artistName" placeholder="아티스트 이름">
+<input class="input" id="artistColor" placeholder="아티스트 이름 색상 (#9EC4E8)">
+<input class="input" id="artistProfile" placeholder="아티스트 사진 URL">
+<input class="input" id="artistTime" placeholder="작성 시간">
 
 <textarea
 class="input"
@@ -456,42 +430,21 @@ onclick="addArtistComment()"
 </button>
 
 </div>
-
 </div>
 
 <!-- 답글 추가 -->
 
 <div class="overlay" id="replyOverlay">
-
 <div class="editor">
 
 <div class="editor-title">
 아티스트 답글 추가
 </div>
 
-<input
-class="input"
-id="replyArtistName"
-placeholder="아티스트 이름"
-/>
-
-<input
-class="input"
-id="replyArtistColor"
-placeholder="아티스트 이름 색상"
-/>
-
-<input
-class="input"
-id="replyArtistProfile"
-placeholder="아티스트 사진 URL"
-/>
-
-<input
-class="input"
-id="replyArtistTime"
-placeholder="작성 시간"
-/>
+<input class="input" id="replyArtistName" placeholder="아티스트 이름">
+<input class="input" id="replyArtistColor" placeholder="아티스트 이름 색상">
+<input class="input" id="replyArtistProfile" placeholder="아티스트 사진 URL">
+<input class="input" id="replyArtistTime" placeholder="작성 시간">
 
 <textarea
 class="input"
@@ -507,7 +460,6 @@ onclick="submitReply()"
 </button>
 
 </div>
-
 </div>
 
 <footer>
@@ -521,6 +473,7 @@ made with love ♡
 //////////////////////////////////////////////////
 
 const firebaseConfig = {
+
 apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
 authDomain: "weverse-archive.firebaseapp.com",
 projectId: "weverse-archive",
@@ -528,6 +481,7 @@ storageBucket: "weverse-archive.firebasestorage.app",
 messagingSenderId: "81825623806",
 appId: "1:81825623806:web:4a815e85600f0f9de13faf",
 measurementId: "G-GX6RB28S7D"
+
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -535,14 +489,17 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 //////////////////////////////////////////////////
-// archive 분리
+// archive 구분
 //////////////////////////////////////////////////
 
-const params =
-new URLSearchParams(location.search);
+const pathArchive =
+location.pathname
+.replaceAll('/','')
+.replace('.html','')
+.replace(/\s/g,'');
 
 const archiveId =
-params.get('archive') || 'default';
+pathArchive || 'default';
 
 //////////////////////////////////////////////////
 // data
@@ -596,7 +553,7 @@ function renderPosts(){
 
 feed.innerHTML = '';
 
-posts.forEach((post)=>{
+posts.forEach(post=>{
 
 const card =
 document.createElement('div');
@@ -659,6 +616,8 @@ html += renderReply(reply);
 
 });
 
+if(!post.completed){
+
 html += `
 
 <button
@@ -668,9 +627,18 @@ onclick="addReplyPrompt('${post.id}')"
 + 아티스트 답글 추가
 </button>
 
-</div>
+<button
+class="complete-btn"
+onclick="completePost('${post.id}')"
+>
+완료
+</button>
 
 `;
+
+}
+
+html += `</div>`;
 
 }
 
@@ -737,6 +705,8 @@ html += renderReply(reply);
 
 });
 
+if(!post.completed){
+
 html += `
 
 <button
@@ -746,9 +716,18 @@ onclick="addReplyPrompt('${post.id}')"
 + 아티스트 답글 추가
 </button>
 
-</div>
+<button
+class="complete-btn"
+onclick="completePost('${post.id}')"
+>
+완료
+</button>
 
 `;
+
+}
+
+html += `</div>`;
 
 }
 
@@ -839,7 +818,7 @@ ${reply.artistReply || ''}
 }
 
 //////////////////////////////////////////////////
-// overlay open
+// open
 //////////////////////////////////////////////////
 
 function openTypeSelector(){
@@ -881,7 +860,7 @@ document.getElementById('replyOverlay')
 }
 
 //////////////////////////////////////////////////
-// overlay close
+// close
 //////////////////////////////////////////////////
 
 function closeAll(){
@@ -901,7 +880,9 @@ document.querySelectorAll('.overlay')
 overlay.addEventListener('click',(e)=>{
 
 if(e.target === overlay){
+
 overlay.style.display = 'none';
+
 }
 
 });
@@ -909,13 +890,13 @@ overlay.style.display = 'none';
 });
 
 //////////////////////////////////////////////////
-// Firestore realtime
+// realtime
 //////////////////////////////////////////////////
 
 db.collection("archives")
 .doc(archiveId)
 .collection("posts")
-.orderBy("createdAt","desc")
+.orderBy("createdAt","asc")
 .onSnapshot(snapshot=>{
 
 posts = snapshot.docs.map(doc=>({
@@ -979,6 +960,8 @@ document.getElementById('fanArtistReply').value
 
 ],
 
+completed:false,
+
 createdAt: Date.now()
 
 });
@@ -988,7 +971,7 @@ closeAll();
 }
 
 //////////////////////////////////////////////////
-// 아티스트 게시물 추가
+// 아티스트 댓글 추가
 //////////////////////////////////////////////////
 
 async function addArtistComment(){
@@ -1019,6 +1002,8 @@ document.getElementById('artistContent').value,
 
 replies:[],
 
+completed:false,
+
 createdAt: Date.now()
 
 });
@@ -1033,16 +1018,17 @@ closeAll();
 
 async function submitReply(){
 
-const docRef =
+const ref =
 db.collection("archives")
 .doc(archiveId)
 .collection("posts")
 .doc(currentReplyId);
 
-const docSnap =
-await docRef.get();
+const snap =
+await ref.get();
 
-const data = docSnap.data();
+const data =
+snap.data();
 
 const replies =
 data.replies || [];
@@ -1067,13 +1053,32 @@ document.getElementById('replyArtistContent').value
 
 });
 
-await docRef.update({
+await ref.update({
 
 replies: replies
 
 });
 
 closeAll();
+
+}
+
+//////////////////////////////////////////////////
+// 완료
+//////////////////////////////////////////////////
+
+async function completePost(id){
+
+await db
+.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.doc(id)
+.update({
+
+completed:true
+
+});
 
 }
 
