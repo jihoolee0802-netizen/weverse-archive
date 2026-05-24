@@ -7,10 +7,6 @@
 
 <title>Weverse Archive</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
@@ -59,7 +55,6 @@ margin-bottom:16px;
 .left{
 display:flex;
 gap:14px;
-width:100%;
 min-width:0;
 }
 
@@ -153,6 +148,7 @@ margin-left:20px;
 padding-left:18px;
 border-left:3px solid #e5e5e5;
 margin-bottom:26px;
+overflow:hidden;
 }
 
 .open-editor{
@@ -253,6 +249,25 @@ font-weight:700;
 cursor:pointer;
 }
 
+.complete-btn{
+width:100%;
+border:none;
+
+background:#e9eef5;
+color:#6b7480;
+
+border-radius:18px;
+
+padding:16px;
+
+font-size:16px;
+font-weight:700;
+
+cursor:pointer;
+
+margin-top:12px;
+}
+
 .add-reply-btn{
 width:100%;
 margin-top:14px;
@@ -272,25 +287,6 @@ font-weight:700;
 cursor:pointer;
 }
 
-.complete-btn{
-width:100%;
-margin-top:10px;
-
-border:none;
-background:#f2f2f2;
-
-color:#666;
-
-border-radius:16px;
-
-padding:14px;
-
-font-size:15px;
-font-weight:700;
-
-cursor:pointer;
-}
-
 footer{
 text-align:center;
 margin-top:40px;
@@ -298,8 +294,21 @@ color:#9EC4E8;
 font-size:15px;
 }
 
-.hidden{
-display:none !important;
+@media (max-width:600px){
+
+body{
+padding:18px 10px 120px;
+}
+
+.post{
+padding:20px;
+border-radius:24px;
+}
+
+.content{
+font-size:17px;
+}
+
 }
 
 </style>
@@ -529,6 +538,13 @@ onclick="submitReply()"
 답글 저장
 </button>
 
+<button
+class="complete-btn"
+onclick="completeReplies()"
+>
+완료
+</button>
+
 </div>
 
 </div>
@@ -540,62 +556,31 @@ made with love ♡
 <script>
 
 //////////////////////////////////////////////////
-// FIREBASE
+// archive 분리
 //////////////////////////////////////////////////
 
-const firebaseConfig = {
-apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
-authDomain: "weverse-archive.firebaseapp.com",
-projectId: "weverse-archive",
-storageBucket: "weverse-archive.firebasestorage.app",
-messagingSenderId: "81825623806",
-appId: "1:81825623806:web:4a815e85600f0f9de13faf",
-measurementId: "G-GX6RB28S7D"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db =
-firebase.firestore();
-
-//////////////////////////////////////////////////
-// ARCHIVE
-//////////////////////////////////////////////////
+const params =
+new URLSearchParams(location.search);
 
 const archiveId =
-localStorage.getItem('currentArchive')
-|| 'default';
+params.get('archive') || 'default';
+
+const STORAGE_KEY =
+'weverseArchive_' + archiveId;
 
 //////////////////////////////////////////////////
-// DATA
+// data
 //////////////////////////////////////////////////
 
-let posts = [];
+let posts =
+JSON.parse(
+localStorage.getItem(STORAGE_KEY)
+) || [];
+
 let currentReplyIndex = null;
 
 const feed =
 document.getElementById('feed');
-
-//////////////////////////////////////////////////
-// 실시간 로드
-//////////////////////////////////////////////////
-
-db.collection("archives")
-.doc(archiveId)
-.collection("posts")
-.orderBy("createdAt","asc")
-.onSnapshot(snapshot=>{
-
-posts = snapshot.docs.map(doc=>({
-
-id:doc.id,
-...doc.data()
-
-}));
-
-renderPosts();
-
-});
 
 //////////////////////////////////////////////////
 // 인증마크
@@ -631,7 +616,7 @@ d="M10.2 15.5L6.8 12.1L8 10.9L10.2 13.1L16 7.3L17.2 8.5L10.2 15.5Z"
 }
 
 //////////////////////////////////////////////////
-// 렌더
+// render
 //////////////////////////////////////////////////
 
 function renderPosts(){
@@ -706,13 +691,6 @@ class="add-reply-btn"
 onclick="addReplyPrompt(${index})"
 >
 + 아티스트 답글 추가
-</button>
-
-<button
-class="complete-btn"
-onclick="completePost('${post.id}')"
->
-완료
 </button>
 
 `;
@@ -793,13 +771,6 @@ onclick="addReplyPrompt(${index})"
 + 아티스트 답글 추가
 </button>
 
-<button
-class="complete-btn"
-onclick="completePost('${post.id}')"
->
-완료
-</button>
-
 `;
 
 }
@@ -827,7 +798,7 @@ this.classList.contains('active')
 ? '♥'
 : '♡';
 
-};
+}
 
 });
 
@@ -953,9 +924,7 @@ document.querySelectorAll('.overlay')
 overlay.addEventListener('click',(e)=>{
 
 if(e.target === overlay){
-
 overlay.style.display = 'none';
-
 }
 
 });
@@ -963,15 +932,29 @@ overlay.style.display = 'none';
 });
 
 //////////////////////////////////////////////////
-// 팬 게시물 추가
+// save
 //////////////////////////////////////////////////
 
-async function addFanPost(){
+function save(){
 
-await db.collection("archives")
-.doc(archiveId)
-.collection("posts")
-.add({
+localStorage.setItem(
+STORAGE_KEY,
+JSON.stringify(posts)
+);
+
+renderPosts();
+
+closeAll();
+
+}
+
+//////////////////////////////////////////////////
+// add fan
+//////////////////////////////////////////////////
+
+function addFanPost(){
+
+posts.push({
 
 type:'fan',
 
@@ -986,6 +969,8 @@ document.getElementById('fanTime').value,
 
 fanContent:
 document.getElementById('fanContent').value,
+
+completed:false,
 
 replies:[
 
@@ -1009,27 +994,21 @@ document.getElementById('fanArtistReply').value
 
 }
 
-],
-
-completed:false,
-createdAt:Date.now()
+]
 
 });
 
-closeAll();
+save();
 
 }
 
 //////////////////////////////////////////////////
-// 아티스트 댓글 추가
+// add artist
 //////////////////////////////////////////////////
 
-async function addArtistComment(){
+function addArtistComment(){
 
-await db.collection("archives")
-.doc(archiveId)
-.collection("posts")
-.add({
+posts.push({
 
 type:'artist',
 
@@ -1049,29 +1028,24 @@ document.getElementById('artistTime').value,
 artistContent:
 document.getElementById('artistContent').value,
 
-replies:[],
 completed:false,
-createdAt:Date.now()
+
+replies:[]
 
 });
 
-closeAll();
+save();
 
 }
 
 //////////////////////////////////////////////////
-// 답글 추가
+// add reply
 //////////////////////////////////////////////////
 
-async function submitReply(){
+function submitReply(){
 
-const post = posts[currentReplyIndex];
-
-const updatedReplies = [
-
-...(post.replies || []),
-
-{
+posts[currentReplyIndex]
+.replies.push({
 
 artistName:
 document.getElementById('replyArtistName').value,
@@ -1089,21 +1063,9 @@ document.getElementById('replyArtistTime').value,
 artistReply:
 document.getElementById('replyArtistContent').value
 
-}
-
-];
-
-await db.collection("archives")
-.doc(archiveId)
-.collection("posts")
-.doc(post.id)
-.update({
-
-replies:updatedReplies
-
 });
 
-closeAll();
+save();
 
 }
 
@@ -1111,19 +1073,19 @@ closeAll();
 // 완료
 //////////////////////////////////////////////////
 
-async function completePost(postId){
+function completeReplies(){
 
-await db.collection("archives")
-.doc(archiveId)
-.collection("posts")
-.doc(postId)
-.update({
+posts[currentReplyIndex].completed = true;
 
-completed:true
-
-});
+save();
 
 }
+
+//////////////////////////////////////////////////
+// start
+//////////////////////////////////////////////////
+
+renderPosts();
 
 </script>
 
