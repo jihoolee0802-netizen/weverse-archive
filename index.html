@@ -3,12 +3,13 @@
 <head>
 
 <meta charset="UTF-8" />
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <title>Weverse Archive</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <style>
 
@@ -19,26 +20,17 @@ box-sizing:border-box;
 -webkit-tap-highlight-color:transparent;
 }
 
-html{
--webkit-text-size-adjust:100%;
-}
-
 body{
 margin:0;
-padding:24px 16px 120px;
+padding:24px 12px 120px;
 background:#f5f5f7;
 font-family:'Pretendard',sans-serif;
 color:#111;
 }
 
-button,
-input,
-textarea{
-font-family:'Pretendard',sans-serif;
-}
-
 .container{
-max-width:560px;
+width:100%;
+max-width:680px;
 margin:auto;
 }
 
@@ -54,6 +46,7 @@ border-radius:30px;
 padding:24px;
 border:1px solid #ececec;
 box-shadow:0 4px 20px rgba(0,0,0,0.05);
+overflow:hidden;
 }
 
 .header{
@@ -67,6 +60,7 @@ margin-bottom:16px;
 display:flex;
 gap:14px;
 width:100%;
+min-width:0;
 }
 
 .profile{
@@ -95,6 +89,7 @@ flex-wrap:wrap;
 .name{
 font-size:18px;
 font-weight:700;
+word-break:break-word;
 }
 
 .date{
@@ -109,11 +104,13 @@ align-items:center;
 justify-content:center;
 width:18px;
 height:18px;
+flex-shrink:0;
 }
 
 .verify svg{
 width:18px;
 height:18px;
+display:block;
 }
 
 .content{
@@ -121,6 +118,7 @@ font-size:18px;
 line-height:1.8;
 word-break:break-word;
 white-space:pre-wrap;
+overflow-wrap:anywhere;
 }
 
 .actions{
@@ -163,8 +161,8 @@ bottom:24px;
 left:50%;
 transform:translateX(-50%);
 
-width:calc(100% - 32px);
-max-width:560px;
+width:calc(100% - 24px);
+max-width:680px;
 
 border:none;
 border-radius:22px;
@@ -200,7 +198,7 @@ z-index:1000;
 
 .editor{
 width:100%;
-max-width:600px;
+max-width:680px;
 
 background:white;
 
@@ -210,8 +208,6 @@ padding:26px 20px 40px;
 
 max-height:90vh;
 overflow:auto;
-
--webkit-overflow-scrolling:touch;
 }
 
 .editor-title{
@@ -223,7 +219,6 @@ margin-bottom:20px;
 .input{
 width:100%;
 border:none;
-outline:none;
 background:#f4f4f5;
 
 border-radius:18px;
@@ -232,6 +227,8 @@ padding:16px;
 margin-bottom:14px;
 
 font-size:16px;
+font-family:'Pretendard',sans-serif;
+color:#111;
 }
 
 textarea{
@@ -275,18 +272,23 @@ font-weight:700;
 cursor:pointer;
 }
 
-.loading{
-text-align:center;
-padding:40px 20px;
-color:#8e8e93;
-font-size:15px;
-}
+.complete-btn{
+width:100%;
+margin-top:10px;
 
-.empty{
-text-align:center;
-padding:60px 20px;
-color:#8e8e93;
-font-size:16px;
+border:none;
+background:#f2f2f2;
+
+color:#666;
+
+border-radius:16px;
+
+padding:14px;
+
+font-size:15px;
+font-weight:700;
+
+cursor:pointer;
 }
 
 footer{
@@ -294,6 +296,10 @@ text-align:center;
 margin-top:40px;
 color:#9EC4E8;
 font-size:15px;
+}
+
+.hidden{
+display:none !important;
 }
 
 </style>
@@ -304,13 +310,7 @@ font-size:15px;
 
 <div class="container">
 
-<div class="feed" id="feed">
-
-<div class="loading">
-불러오는 중...
-</div>
-
-</div>
+<div class="feed" id="feed"></div>
 
 </div>
 
@@ -537,95 +537,68 @@ onclick="submitReply()"
 made with love ♡
 </footer>
 
-<script type="module">
+<script>
 
 //////////////////////////////////////////////////
-// Firebase
-//////////////////////////////////////////////////
-
-import { initializeApp }
-from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-
-import {
-getFirestore,
-doc,
-getDoc,
-setDoc
-}
-from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-//////////////////////////////////////////////////
-// firebase config
+// FIREBASE
 //////////////////////////////////////////////////
 
 const firebaseConfig = {
-
-apiKey:
-"AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
-
-authDomain:
-"weverse-archive.firebaseapp.com",
-
-projectId:
-"weverse-archive",
-
-storageBucket:
-"weverse-archive.firebasestorage.app",
-
-messagingSenderId:
-"81825623806",
-
-appId:
-"1:81825623806:web:4a815e85600f0f9de13faf",
-
-measurementId:
-"G-GX6RB28S7D"
-
+apiKey: "AIzaSyCScxIFC1-FtX7a9JNFMoNB9yAyhBoneLo",
+authDomain: "weverse-archive.firebaseapp.com",
+projectId: "weverse-archive",
+storageBucket: "weverse-archive.firebasestorage.app",
+messagingSenderId: "81825623806",
+appId: "1:81825623806:web:4a815e85600f0f9de13faf",
+measurementId: "G-GX6RB28S7D"
 };
 
-//////////////////////////////////////////////////
-// init
-//////////////////////////////////////////////////
-
-const app =
-initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
 const db =
-getFirestore(app);
+firebase.firestore();
 
 //////////////////////////////////////////////////
-// archive 분리
+// ARCHIVE
 //////////////////////////////////////////////////
-
-const params =
-new URLSearchParams(location.search);
 
 const archiveId =
-params.get('archive') || 'default';
-
-const DOC_ID =
-archiveId;
+localStorage.getItem('currentArchive')
+|| 'default';
 
 //////////////////////////////////////////////////
-// local fallback
-//////////////////////////////////////////////////
-
-const LOCAL_KEY =
-'weverseArchiveBackup_' + archiveId;
-
-//////////////////////////////////////////////////
-// data
+// DATA
 //////////////////////////////////////////////////
 
 let posts = [];
-
 let currentReplyIndex = null;
 
 const feed =
 document.getElementById('feed');
 
 //////////////////////////////////////////////////
-// verify badge
+// 실시간 로드
+//////////////////////////////////////////////////
+
+db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.orderBy("createdAt","asc")
+.onSnapshot(snapshot=>{
+
+posts = snapshot.docs.map(doc=>({
+
+id:doc.id,
+...doc.data()
+
+}));
+
+renderPosts();
+
+});
+
+//////////////////////////////////////////////////
+// 인증마크
 //////////////////////////////////////////////////
 
 function verifyBadge(){
@@ -658,21 +631,210 @@ d="M10.2 15.5L6.8 12.1L8 10.9L10.2 13.1L16 7.3L17.2 8.5L10.2 15.5Z"
 }
 
 //////////////////////////////////////////////////
-// safe image
+// 렌더
 //////////////////////////////////////////////////
 
-function safeImage(url){
+function renderPosts(){
 
-if(!url){
-return 'https://placehold.co/200x200';
+feed.innerHTML = '';
+
+posts.forEach((post,index)=>{
+
+const card =
+document.createElement('div');
+
+card.className = 'post';
+
+let html = '';
+
+if(post.type === 'fan'){
+
+html += `
+
+<div class="header">
+
+<div class="left">
+
+<div class="profile">
+<img src="${post.fanProfile || ''}">
+</div>
+
+<div>
+
+<div class="name">
+${post.fanName || ''}
+</div>
+
+<div class="date">
+${post.fanTime || ''}
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="content">
+${post.fanContent || ''}
+</div>
+
+<div class="actions">
+<button class="like">♡</button>
+</div>
+
+<div class="reply-wrapper">
+
+<div class="reply-label">
+아티스트 답글
+</div>
+
+`;
+
+(post.replies || []).forEach(reply=>{
+
+html += renderReply(reply);
+
+});
+
+if(!post.completed){
+
+html += `
+
+<button
+class="add-reply-btn"
+onclick="addReplyPrompt(${index})"
+>
++ 아티스트 답글 추가
+</button>
+
+<button
+class="complete-btn"
+onclick="completePost('${post.id}')"
+>
+완료
+</button>
+
+`;
+
 }
 
-return url;
+html += `</div>`;
+
+}
+
+if(post.type === 'artist'){
+
+html += `
+
+<div class="header">
+
+<div class="left">
+
+<div class="profile">
+<img src="${post.artistProfile || ''}">
+</div>
+
+<div>
+
+<div class="name-row">
+
+<div
+class="name"
+style="color:${post.artistColor || '#9EC4E8'}"
+>
+${post.artistName || ''}
+</div>
+
+${verifyBadge()}
+
+</div>
+
+<div class="date">
+${post.artistTime || ''}
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="content">
+${post.artistContent || ''}
+</div>
+
+<div class="actions">
+<button class="like">♡</button>
+</div>
+
+<div class="reply-wrapper">
+
+${(post.replies || []).length > 0
+? '<div class="reply-label">아티스트 답글</div>'
+: ''}
+
+`;
+
+(post.replies || []).forEach(reply=>{
+
+html += renderReply(reply);
+
+});
+
+if(!post.completed){
+
+html += `
+
+<button
+class="add-reply-btn"
+onclick="addReplyPrompt(${index})"
+>
++ 아티스트 답글 추가
+</button>
+
+<button
+class="complete-btn"
+onclick="completePost('${post.id}')"
+>
+완료
+</button>
+
+`;
+
+}
+
+html += `</div>`;
+
+}
+
+card.innerHTML = html;
+
+feed.appendChild(card);
+
+});
+
+document
+.querySelectorAll('.like')
+.forEach(btn=>{
+
+btn.onclick = function(){
+
+this.classList.toggle('active');
+
+this.textContent =
+this.classList.contains('active')
+? '♥'
+: '♡';
+
+};
+
+});
 
 }
 
 //////////////////////////////////////////////////
-// render reply
+// reply render
 //////////////////////////////////////////////////
 
 function renderReply(reply){
@@ -686,11 +848,7 @@ return `
 <div class="left">
 
 <div class="profile">
-<img
-src="${safeImage(reply.artistProfile)}"
-loading="lazy"
-onerror="this.src='https://placehold.co/200x200'"
->
+<img src="${reply.artistProfile || ''}">
 </div>
 
 <div>
@@ -733,357 +891,37 @@ ${reply.artistReply || ''}
 }
 
 //////////////////////////////////////////////////
-// render
-//////////////////////////////////////////////////
-
-function renderPosts(){
-
-feed.innerHTML = '';
-
-if(posts.length === 0){
-
-feed.innerHTML = `
-
-<div class="empty">
-아직 게시물이 없어요 ✨
-</div>
-
-`;
-
-return;
-
-}
-
-posts.forEach((post,index)=>{
-
-const card =
-document.createElement('div');
-
-card.className = 'post';
-
-let html = '';
-
-//////////////////////////////////////////////////
-// fan
-//////////////////////////////////////////////////
-
-if(post.type === 'fan'){
-
-html += `
-
-<div class="header">
-
-<div class="left">
-
-<div class="profile">
-<img
-src="${safeImage(post.fanProfile)}"
-loading="lazy"
-onerror="this.src='https://placehold.co/200x200'"
->
-</div>
-
-<div>
-
-<div class="name">
-${post.fanName || ''}
-</div>
-
-<div class="date">
-${post.fanTime || ''}
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="content">
-${post.fanContent || ''}
-</div>
-
-<div class="actions">
-<button class="like">♡</button>
-</div>
-
-<div class="reply-wrapper">
-
-<div class="reply-label">
-아티스트 답글
-</div>
-
-`;
-
-(post.replies || []).forEach(reply=>{
-
-html += renderReply(reply);
-
-});
-
-html += `
-
-<button
-class="add-reply-btn"
-onclick="addReplyPrompt(${index})"
->
-+ 아티스트 답글 추가
-</button>
-
-</div>
-
-`;
-
-}
-
-//////////////////////////////////////////////////
-// artist
-//////////////////////////////////////////////////
-
-if(post.type === 'artist'){
-
-html += `
-
-<div class="header">
-
-<div class="left">
-
-<div class="profile">
-<img
-src="${safeImage(post.artistProfile)}"
-loading="lazy"
-onerror="this.src='https://placehold.co/200x200'"
->
-</div>
-
-<div>
-
-<div class="name-row">
-
-<div
-class="name"
-style="color:${post.artistColor || '#9EC4E8'}"
->
-${post.artistName || ''}
-</div>
-
-${verifyBadge()}
-
-</div>
-
-<div class="date">
-${post.artistTime || ''}
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="content">
-${post.artistContent || ''}
-</div>
-
-<div class="actions">
-<button class="like">♡</button>
-</div>
-
-<div class="reply-wrapper">
-
-${post.replies?.length
-? '<div class="reply-label">아티스트 답글</div>'
-: ''}
-
-`;
-
-(post.replies || []).forEach(reply=>{
-
-html += renderReply(reply);
-
-});
-
-html += `
-
-<button
-class="add-reply-btn"
-onclick="addReplyPrompt(${index})"
->
-+ 아티스트 답글 추가
-</button>
-
-</div>
-
-`;
-
-}
-
-card.innerHTML = html;
-
-feed.appendChild(card);
-
-});
-
-//////////////////////////////////////////////////
-// like
-//////////////////////////////////////////////////
-
-document
-.querySelectorAll('.like')
-.forEach(btn=>{
-
-btn.onclick = function(){
-
-this.classList.toggle('active');
-
-this.textContent =
-this.classList.contains('active')
-? '♥'
-: '♡';
-
-};
-
-});
-
-}
-
-//////////////////////////////////////////////////
-// firebase save
-//////////////////////////////////////////////////
-
-async function savePosts(){
-
-try{
-
-await setDoc(
-
-doc(db,'archives',DOC_ID),
-
-{
-posts:posts,
-updatedAt:Date.now()
-}
-
-);
-
-localStorage.setItem(
-LOCAL_KEY,
-JSON.stringify(posts)
-);
-
-renderPosts();
-
-closeAll();
-
-}
-catch(error){
-
-console.error(error);
-
-localStorage.setItem(
-LOCAL_KEY,
-JSON.stringify(posts)
-);
-
-renderPosts();
-
-closeAll();
-
-alert(
-'인터넷 연결 문제로 로컬에만 저장되었어요.'
-);
-
-}
-
-}
-
-//////////////////////////////////////////////////
-// firebase load
-//////////////////////////////////////////////////
-
-async function loadPosts(){
-
-try{
-
-const snapshot =
-await getDoc(
-doc(db,'archives',DOC_ID)
-);
-
-if(snapshot.exists()){
-
-posts =
-snapshot.data().posts || [];
-
-localStorage.setItem(
-LOCAL_KEY,
-JSON.stringify(posts)
-);
-
-}
-else{
-
-const backup =
-localStorage.getItem(LOCAL_KEY);
-
-posts =
-backup
-? JSON.parse(backup)
-: [];
-
-}
-
-}
-catch(error){
-
-console.error(error);
-
-const backup =
-localStorage.getItem(LOCAL_KEY);
-
-posts =
-backup
-? JSON.parse(backup)
-: [];
-
-}
-
-renderPosts();
-
-}
-
-//////////////////////////////////////////////////
 // open
 //////////////////////////////////////////////////
 
-window.openTypeSelector = function(){
+function openTypeSelector(){
 
 closeAll();
 
 document.getElementById('typeOverlay')
 .style.display = 'flex';
 
-};
+}
 
-window.openFanPostEditor = function(){
+function openFanPostEditor(){
 
 closeAll();
 
 document.getElementById('fanOverlay')
 .style.display = 'flex';
 
-};
+}
 
-window.openArtistCommentEditor = function(){
+function openArtistCommentEditor(){
 
 closeAll();
 
 document.getElementById('artistOverlay')
 .style.display = 'flex';
 
-};
+}
 
-window.addReplyPrompt = function(index){
+function addReplyPrompt(index){
 
 currentReplyIndex = index;
 
@@ -1092,7 +930,7 @@ closeAll();
 document.getElementById('replyOverlay')
 .style.display = 'flex';
 
-};
+}
 
 //////////////////////////////////////////////////
 // close
@@ -1125,12 +963,15 @@ overlay.style.display = 'none';
 });
 
 //////////////////////////////////////////////////
-// add fan
+// 팬 게시물 추가
 //////////////////////////////////////////////////
 
-window.addFanPost = async function(){
+async function addFanPost(){
 
-posts.unshift({
+await db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.add({
 
 type:'fan',
 
@@ -1168,21 +1009,27 @@ document.getElementById('fanArtistReply').value
 
 }
 
-]
+],
+
+completed:false,
+createdAt:Date.now()
 
 });
 
-await savePosts();
+closeAll();
 
-};
+}
 
 //////////////////////////////////////////////////
-// add artist
+// 아티스트 댓글 추가
 //////////////////////////////////////////////////
 
-window.addArtistComment = async function(){
+async function addArtistComment(){
 
-posts.unshift({
+await db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.add({
 
 type:'artist',
 
@@ -1202,22 +1049,29 @@ document.getElementById('artistTime').value,
 artistContent:
 document.getElementById('artistContent').value,
 
-replies:[]
+replies:[],
+completed:false,
+createdAt:Date.now()
 
 });
 
-await savePosts();
+closeAll();
 
-};
+}
 
 //////////////////////////////////////////////////
-// add reply
+// 답글 추가
 //////////////////////////////////////////////////
 
-window.submitReply = async function(){
+async function submitReply(){
 
-posts[currentReplyIndex]
-.replies.push({
+const post = posts[currentReplyIndex];
+
+const updatedReplies = [
+
+...(post.replies || []),
+
+{
 
 artistName:
 document.getElementById('replyArtistName').value,
@@ -1235,17 +1089,41 @@ document.getElementById('replyArtistTime').value,
 artistReply:
 document.getElementById('replyArtistContent').value
 
+}
+
+];
+
+await db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.doc(post.id)
+.update({
+
+replies:updatedReplies
+
 });
 
-await savePosts();
+closeAll();
 
-};
+}
 
 //////////////////////////////////////////////////
-// start
+// 완료
 //////////////////////////////////////////////////
 
-loadPosts();
+async function completePost(postId){
+
+await db.collection("archives")
+.doc(archiveId)
+.collection("posts")
+.doc(postId)
+.update({
+
+completed:true
+
+});
+
+}
 
 </script>
 
